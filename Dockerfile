@@ -1,17 +1,20 @@
-# Usar imagem base com PHP + Apache
+# Usa a imagem PHP com Apache
 FROM php:8.2-apache
 
-# Instalar a extensão do PostgreSQL
+# Instala suporte ao PostgreSQL
 RUN docker-php-ext-install pdo pdo_pgsql
 
-# Copiar o código do projeto para o container
-COPY public/ /var/www/html/
+# Copia TODO o conteúdo do projeto (raiz + api + css + js + etc)
+COPY . /var/www/html/
 
-# Permitir reescrita de URLs (caso use .htaccess futuramente)
+# Ativa reescrita de URLs (opcional, mas bom pra API e roteamento)
 RUN a2enmod rewrite
 
-# Expor a porta padrão do Apache
+# Define o diretório de trabalho como a raiz do servidor web
+WORKDIR /var/www/html
+
+# Expõe a porta padrão do Apache
 EXPOSE 80
 
-# Comando de inicialização
+# Comando padrão para iniciar o servidor
 CMD ["apache2-foreground"]
