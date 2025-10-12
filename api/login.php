@@ -1,61 +1,29 @@
-<?php
-// api/login.php
-
-require_once 'db_connection.php';
-
-session_start(); 
-
-header('Content-Type: application/json');
-
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    http_response_code(405);
-    echo json_encode(['error' => 'Método não permitido']);
-    exit;
-}
-
-$data = json_decode(file_get_contents('php://input'), true);
-
-if (json_last_error() !== JSON_ERROR_NONE) {
-    http_response_code(400);
-    echo json_encode(['error' => 'JSON inválido recebido.']);
-    exit;
-}
-
-$email = $data['email'] ?? null;
-$senha = $data['senha'] ?? null;
-
-if (!$email || !$senha) {
-    http_response_code(400);
-    echo json_encode(['error' => 'Email e senha são obrigatórios.']);
-    exit;
-}
-
-try {
-    // Query está correcta e alinhada com a sua tabela 'usuarios'
-    $sql = "SELECT id_usuario, nome, senha FROM usuarios WHERE email = :email";
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute([':email' => $email]);
-    
-    $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    // Verifica se o utilizador existe E se a senha digitada corresponde ao hash no banco de dados
-    if ($usuario && password_verify($senha, $usuario['senha'])) {
-        // Sucesso! Inicia a sessão
-        $_SESSION['user_id'] = $usuario['id_usuario'];
-        $_SESSION['user_name'] = $usuario['nome'];
-        $_SESSION['logged_in'] = true;
-
-        http_response_code(200);
-        echo json_encode(['message' => 'Login bem-sucedido!']);
-    } else {
-        // Falha (utilizador não encontrado ou senha incorrecta)
-        http_response_code(401);
-        echo json_encode(['error' => 'Email ou senha inválidos.']);
+// src/js/login.js
+document.addEventListener('DOMContentLoaded', () => {
+    const formLogin = document.getElementById('form-login');
+    if (formLogin) {
+        formLogin.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const email = document.getElementById('email').value;
+            const senha = document.getElementById('senha').value;
+            try {
+                const response = await fetch('api/login.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, senha })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    alert('Login realizado com sucesso! Redirecionando...');
+                    // **CORREÇÃO AQUI**
+                    window.location.href = 'index.html'; 
+                } else {
+                    alert(`Erro: ${data.error}`);
+                }
+            } catch (error) {
+                console.error('Erro de comunicação:', error);
+                alert('Ocorreu um erro de comunicação com o servidor.');
+            }
+        });
     }
-
-} catch (PDOException $e) {
-    error_log("Erro de banco de dados no login: " . $e->getMessage());
-    http_response_code(500);
-    echo json_encode(['error' => 'Ocorreu um erro interno no servidor.']);
-}
-?>
+});

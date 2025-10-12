@@ -90,6 +90,3 @@ function clearMarkers() {
     }
     markers = [];
 }
-
-// Inicia o mapa
-initMap();
