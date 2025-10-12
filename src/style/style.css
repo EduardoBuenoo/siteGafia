@@ -29,9 +29,10 @@ body{
 
 /* ===== UTILS ===== */
 .container{ 
-  width: min(100%, calc(var(--container) + 48px)); 
-  padding: 0 24px; 
-  margin: 0 auto; 
+  max-width: var(--container); /* Define a largura máxima */
+  width: 100%; /* Ocupa 100% da largura disponível */
+  padding: 0 24px; /* Adiciona 24px de espaçamento em cada lado */
+  margin: 0 auto; /* Centra o container */
 }
 .muted{ 
   color: #cfc8d8; 

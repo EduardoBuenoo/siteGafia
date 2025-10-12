@@ -5,16 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>GAFIA - Planejamento de Viagens Elétricas</title>
 
-  <!-- Fonte -->
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 
-  <!-- CSS -->
   <link rel="stylesheet" href="src/style/style.css" />
 </head>
 <body>
-  <!-- ===== HEADER ===== -->
   <header class="site-header">
     <div class="container header-inner">
       <a class="logo" href="/" aria-label="GAFIA - Início">
@@ -22,43 +19,46 @@
         <span>GAFIA</span>
       </a>
 
-      <!-- Toggle mobile -->
       <input type="checkbox" id="nav-toggle" class="nav-toggle" aria-label="Abrir menu" />
       <label for="nav-toggle" class="hamburger" aria-hidden="true">
         <span></span><span></span><span></span>
       </label>
 
-      <nav class="nav" aria-label="Principal">
+      <nav id="nav-guest" class="nav" aria-label="Principal">
         <a href="#inicio">Início</a>
         <a href="#sobre">Sobre</a>
-        <a href="planejamento.html">Planejador de Viagem</a> 
-        <a href="#cadastro">Cadastro</a>
+        <a href="planejamento.html">Planejador de Viagem</a>
+        <a href="cadastro.html">Cadastro</a>
         <a href="#contato">Contato</a>
         <a href="login.html" class="btn btn-outline btn-login">Entrar</a>
       </nav>
+
+      <nav id="nav-user" class="nav" aria-label="Principal do Utilizador" style="display: none;">
+        <a href="planejamento.html">Planejar Viagem</a>
+        <a href="veiculos.html">Meus Veículos</a> <a href="perfil.html">Meu Perfil</a>     <span id="user-greeting" style="color: var(--muted); align-self: center;"></span>
+        <a href="api/logout.php" class="btn btn-outline btn-login">Sair</a>
+      </nav>
+      
     </div>
   </header>
 
-  <!-- ===== HERO ===== -->
   <main id="inicio" class="hero">
     <div class="container hero-grid">
       <section class="hero-text glass" aria-labelledby="hero-title">
         <h1 id="hero-title">Planeje sua viagem de carro elétrico</h1>
         <p>Descubra rotas inteligentes, pontos de recarga e maximize sua autonomia de forma fácil e rápida.</p>
         <div class="hero-buttons">
-          <a href="#cadastro" class="btn btn-primary">Começar Agora</a>
+          <a href="cadastro.html" class="btn btn-primary">Começar Agora</a>
           <a href="#sobre" class="btn btn-secondary">Saiba Mais</a>
         </div>
       </section>
 
-      <!-- Imagem lateral (sem brilhos) -->
       <figure class="hero-img">
         <img class="carro" src="src/img/imagem2.png" alt="Ilustração de carro elétrico" />
       </figure>
     </div>
   </main>
 
-  <!-- ===== SEÇÃO SOBRE ===== -->
   <section id="sobre" class="section container">
     <h2>Por que usar o GAFIA?</h2>
     <p class="section-lead">
@@ -81,7 +81,6 @@
     </div>
   </section>
 
-  <!-- ===== CTA CADASTRO ===== -->
   <section id="cadastro" class="cta">
     <div class="container cta-inner">
       <h2>Pronto para rodar mais longe?</h2>
@@ -90,7 +89,6 @@
     </div>
   </section>
 
-  <!-- ===== FOOTER ===== -->
   <footer id="contato" class="site-footer">
     <div class="container footer-grid">
       <div>
@@ -99,12 +97,15 @@
       </div>
       <nav aria-label="Links de rodapé">
         <a href="#sobre">Sobre</a>
-        <a href="#cadastro">Cadastro</a>
+        <a href="cadastro.html">Cadastro</a>
         <a href="#contato">Contato</a>
         <a href="login.html">Entrar</a>
       </nav>
       <p class="copyright">© 2025 GAFIA — Todos os direitos reservados.</p>
     </div>
   </footer>
+
+  <script src="src/js/main.js"></script>
+
 </body>
 </html>
