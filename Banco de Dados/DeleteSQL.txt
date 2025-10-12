@@ -1,0 +1,9 @@
+-- Exclusão de usuarios e todos os dados relacionados
+
+DELETE * FROM usuario WHERE id_usuario = 1; -- exemplo de exclusão de um usuário específico
+DELETE FROM historico_viagem WHERE id_usuario = 1; -- excluir histórico de viagens do usuário
+
+-- Exclusão de todos os dados (cuidado ao executar)
+DELETE * FROM historico_viagem;
+DELETE * FROM usuario;
+

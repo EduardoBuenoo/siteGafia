@@ -1,0 +1,57 @@
+-- CONSULTAS SIMPLES 
+
+SELECT * FROM estado;
+SELECT * FROM marca;
+SELECT * FROM modelo;
+SELECT * FROM usuarios;
+SELECT * FROM carro;
+SELECT * FROM historico_viagem;
+
+--CONSULTAS COM FILTROS (WHERE)
+
+SELECT * FROM estado WHERE uf_estado = 'SP';
+SELECT * FROM estado WHERE uf_estado = 'SP';
+SELECT * FROM usuarios WHERE nome LIKE 'Giovana%';
+SELECT * FROM carro WHERE ano_carro > 2020;
+SELECT * FROM historico_viagem WHERE km_viagem > 100.00;
+
+--CONSULTAS COM ORDENAÇÃO (ORDER BY)
+
+SELECT * FROM usuarios ORDER BY nome ASC;
+SELECT * FROM carro ORDER BY ano_carro DESC;
+SELECT * FROM historico_viagem ORDER BY dt_consulta DESC;
+
+--CONSULTAS COM AGREGAÇÃO (COUNT, AVG, SUM)
+
+SELECT COUNT(*) FROM usuarios;
+SELECT AVG(km_viagem) FROM historico_viagem;
+SELECT SUM(qnt_abastecimento) FROM historico_viagem;
+
+--JUNÇÃO ENTRE TABELAS (JOIN)
+
+-- Usuários com nome do estado
+SELECT u.nome, u.sobrenome, e.nm_estado
+FROM usuarios u
+JOIN estado e ON u.id_estado = e.id_estado;
+
+-- Carros com marca e modelo
+SELECT c.id_carro, c.ano_carro, m.nm_marca, mo.nm_modelo
+FROM carro c
+JOIN marca m ON c.id_marca = m.id_marca
+JOIN modelo mo ON c.id_modelo = mo.id_modelo;
+
+-- Histórico de viagem com nome do usuário e estado
+SELECT h.id_historico, h.cidade_origem, h.cidade_destino, u.nome, e.nm_estado
+FROM historico_viagem h
+JOIN usuario u ON h.id_usuario = u.id_usuario
+JOIN estados e ON h.id_estado = e.id_estado;
+
+CONSULTAS COM AGRUPAMENTOS (GROUP BY)
+
+SELECT id_estado, COUNT(*) AS total_usuarios
+FROM usuario
+GROUP BY id_estado;
+
+SELECT cidade_origem, AVG(km_viagem) AS media_km
+FROM historico_viagem
+GROUP BY cidade_origem;
