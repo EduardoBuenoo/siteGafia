@@ -1,0 +1,209 @@
+/* ===== ESTILO PARA CENTRALIZAR PÁGINAS DE FORMULÁRIO ===== */
+#page-form {
+  /*display: flex;
+  justify-content: center;
+  align-items: center;*/
+  min-height: 100vh;
+}
+
+/* Container principal com o EFEITO DE VIDRO */
+.login-container {
+  position: relative;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 2rem;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 600px;
+  text-align: center;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+}
+
+.login-container img {
+  width: 70px;
+  margin-bottom: 15px;
+}
+
+/* Textos dentro do container */
+.login-container h1 {
+  font-size: 22px;
+  margin-bottom: 10px;
+  color: #fff;
+}
+
+.login-container p {
+  font-size: 14px;
+  color: #e0e0e0;
+  margin-bottom: 20px;
+}
+
+/* REGRA GERAL PARA TODOS OS INPUTS */
+.login-container input, .login-container select {
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  font-size: 14px;
+  box-sizing: border-box;
+  color: #fff;
+}
+
+/* Estilo para o placeholder dos inputs */
+.login-container input::placeholder {
+  color: #ddd;
+}
+
+/* Remove a aparência padrão do select e ajusta a cor da seta */
+.login-container select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23ffffff%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E');
+  background-repeat: no-repeat;
+  background-position: right 10px top 50%;
+  background-size: .65em auto;
+}
+
+.login-container option {
+    background: #3f0d64;
+}
+
+/* Botão de cadastrar */
+.login-container button {
+  width: 100%;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  color: #3f0d64;
+  font-weight: bold;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.login-container button:hover {
+  background: #fff;
+  transform: translateY(-3px);
+}
+
+/* Link "Já tem uma conta?" */
+.login-container a {
+  display: block;
+  margin-top: 15px;
+  font-size: 14px;
+  color: #c77dff;
+  text-decoration: none;
+}
+
+.login-container a:hover {
+  text-decoration: underline;
+}
+
+/* Botão de voltar */
+.back-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: transparent;
+  color: #fff;
+  text-decoration: none;
+  transition: background-color 0.3s ease;
+}
+
+.back-button:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.back-button svg {
+  width: 24px;   
+  height: 24px;
+  stroke: currentColor; 
+}
+
+/* Estilo para linha do formulário com campos lado a lado (Desktop) */
+.form-row {
+  display: flex;
+  gap: 20px;
+}
+
+/* Sobrescreve a regra geral APENAS para os inputs dentro do .form-row */
+.form-row input {
+  flex: 1;
+  width: auto;
+  margin: 0;
+}
+
+
+/* AJUSTE RESPONSIVO PARA CELULARES */
+
+
+@media (max-width: 768px) {
+  .form-row {
+    flex-direction: column; /* Coloca os campos um embaixo do outro */
+    gap: 0;                 /* Remove o espaço entre eles */
+  }
+
+  /* FORÇA os inputs dentro de .form-row a voltarem ao comportamento normal no celular */
+  .form-row input {
+    width: 100%;    /* Faz com que ocupem a largura total, como os outros campos */
+    margin: 8px 0;  /* Devolve a margem vertical para dar espaçamento */
+  }
+}
+
+/* ======================================================= */
+/* == CÓDIGO ADICIONADO PARA CRIAR A TELA DIVIDIDA == */
+/* ======================================================= */
+
+.split-screen-container {
+    display: flex;
+    width: 100%;
+    min-height: 100vh;
+}
+
+/* Metade Esquerda (Formulário) */
+.form-panel {
+    flex: 1; /* Ocupa 50% do espaço */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px; /* Garante um respiro nas bordas */
+    background-color: #3f0d64; /* Cor de fundo para combinar com o seu design */
+}
+
+/* Metade Direita (Imagem) */
+.image-panel {
+    flex: 1; /* Ocupa os outros 50% */
+    background-image: url('../img/imagemcarro.png'); /* <-- TROQUE PELA SUA IMAGEM */
+    background-size: cover;
+    background-position: center;
+}
+
+/* Ajuste para o seu container não ocupar a largura toda dentro do painel */
+.login-container {
+    width: 100%; /* Garante que ele se ajuste bem dentro do painel */
+    max-width: 500px; /* Ajustei um pouco a largura máxima */
+}
+
+
+/* AJUSTE RESPONSIVO PARA A TELA DIVIDIDA */
+@media (max-width: 900px) {
+    .split-screen-container {
+        flex-direction: column; /* Empilha os painéis em telas menores */
+    }
+
+    /* Em telas de celular, a imagem some para focar no formulário */
+    .image-panel {
+        display: none;
+    }
+}
