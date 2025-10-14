@@ -26,7 +26,7 @@ if (!$email || !$senha) {
 
 try {
     // **CORREÇÃO AQUI: Tabela alterada para 'usuario' (singular)**
-    $sql = "SELECT id_usuario, nome, senha FROM usuario WHERE email = :email";
+    $sql = "SELECT id_usuario, nome, senha FROM usuarios WHERE email = :email";
     $stmt = $pdo->prepare($sql);
     $stmt->execute([':email' => $email]);
     
