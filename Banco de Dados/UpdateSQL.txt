@@ -25,3 +25,15 @@ UPDATE modelo
 SET nm_modelo = :nm_modelo
     
 WHERE id_modelo = :id_modelo;
+
+-- UPADATE USUARIO
+UPDATE usuario
+SET  nome = :nome,
+    sobrenome = :sobrenome,
+    cpf = :cpf,
+    email = :email,
+ 	senha + :senha,
+    telefone = :telefone,
+    dt_nasc = :dt_nasc
+
+WHERE id_usuario = :id_usuario;

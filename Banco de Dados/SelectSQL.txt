@@ -10,7 +10,6 @@ SELECT * FROM historico_viagem;
 --CONSULTAS COM FILTROS (WHERE)
 
 SELECT * FROM estado WHERE uf_estado = 'SP';
-SELECT * FROM estado WHERE uf_estado = 'SP';
 SELECT * FROM usuarios WHERE nome LIKE 'Giovana%';
 SELECT * FROM carro WHERE ano_carro > 2020;
 SELECT * FROM historico_viagem WHERE km_viagem > 100.00;
