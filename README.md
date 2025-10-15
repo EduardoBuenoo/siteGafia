@@ -29,3 +29,5 @@ qualquer coisa
 A Gafia é mais do que um aplicativo de planejamento de rotas; é sua parceira na construção de um futuro mais verde, oferecendo inteligência e sustentabilidade para cada quilômetro da sua jornada.
 
 Visite o nosso [repositório no GitHub](https://github.com/sofia-camargo/siteGafia) para explorar o código, contribuir ou saber mais sobre o projeto.
+
+Você pode acessar o site do Gafia pelo dominio: https://sitegafia.onrender.com/
