@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <title>Meus Veículos - GAFIA</title>
+    <link rel="stylesheet" href="src/style/style.css" />
+    </head>
+<body>
+    <header class="site-header"></header>
+
+    <main class="section container">
+        <h2>Minha Garagem</h2>
+        <p class="section-lead">Aqui estão os veículos elétricos associados à sua conta.</p>
+        
+        <div id="lista-veiculos" class="cards">
+            </div>
+
+        <hr style="margin: 40px 0; border-color: var(--stroke);">
+
+        <section id="adicionar-veiculo">
+            <h2>Adicionar Novo Veículo à Garagem</h2>
+            <p class="section-lead">Selecione um veículo da nossa lista para adicionar à sua garagem.</p>
+            <form id="form-add-veiculo" class="cta-inner" style="background: var(--card); border-radius: var(--radius-lg); padding: 2rem;">
+                <select id="select-carro" style="width: 100%; padding: 12px; font-size: 1rem; border-radius: 12px; margin-bottom: 1rem;">
+                    <option value="">A carregar lista de veículos...</option>
+                </select>
+                <button type="submit" class="btn btn-primary btn-lg">Adicionar à Minha Garagem</button>
+            </form>
+        </section>
+    </main>
+
+    <footer class="site-footer"></footer>
+    <script src="src/js/veiculos.js"></script>
+</body>
+</html>
