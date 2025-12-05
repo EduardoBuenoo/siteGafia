@@ -54,39 +54,40 @@ async function carregarGraficosFrota() {
         const response = await fetch('api/desempenho_carros.php');
         const dados = await response.json();
 
+        // Debug: Verifica no console o que o banco está retornando
+        console.log("Dados da Frota:", dados);
+
         if (dados.error || dados.length === 0) return;
 
-        // Preencher Tabela de Desempenho
         const tbody = document.getElementById('tabela-desempenho').querySelector('tbody');
         tbody.innerHTML = '';
         
-        // Arrays para alimentar os Gráficos
         const labels = [];
         const dataViagens = [];
         const dataKM = [];
-        const dataTempo = []; // Array para as Horas
+        const dataTempo = [];
         const dataRecargas = [];
 
         dados.forEach(carro => {
-            // Preenche a Tabela (HTML)
+            // Garante que o valor seja numérico, se vier nulo usa 0
+            const horas = parseFloat(carro.total_horas || 0);
+
+            // Preenche a Tabela
             const row = tbody.insertRow();
             row.insertCell().textContent = carro.nome_veiculo;
             row.insertCell().textContent = `${parseFloat(carro.km_total_rodado).toFixed(0)} km`;
             row.insertCell().textContent = carro.total_viagens;
-            row.insertCell().textContent = `${carro.total_horas} h`; // Valor vindo da View atualizada
+            row.insertCell().textContent = `${horas} h`; // Exibe na tabela
             row.insertCell().textContent = carro.total_recargas;
 
-            // Preenche os Arrays dos Gráficos (JS)
-            labels.push(carro.nome_veiculo); 
-            
+            // Preenche os Arrays dos Gráficos
+            labels.push(carro.nome_veiculo);
             dataViagens.push(carro.total_viagens);
             dataKM.push(parseFloat(carro.km_total_rodado));
-            dataTempo.push(parseFloat(carro.total_horas || 0)); // Preenche dados do gráfico de tempo
+            dataTempo.push(horas); // Exibe no gráfico
             dataRecargas.push(carro.total_recargas);
         });
 
-        // Configuração Visual Comum dos Gráficos
-        const cores = ['#ff2efc', '#9b5cff', '#34d399', '#fbbf24', '#f87171'];
         const commonOptions = {
             responsive: true,
             plugins: { legend: { display: false } },
@@ -96,35 +97,20 @@ async function carregarGraficosFrota() {
             }
         };
 
-        // 1. Gráfico de Viagens (Barra Vertical)
+        // ... (Chart Viagens e Chart KM mantidos iguais) ...
         new Chart(document.getElementById('chartViagens'), {
             type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [{ label: 'Viagens', data: dataViagens, backgroundColor: '#ff2efc', borderRadius: 5 }]
-            },
+            data: { labels: labels, datasets: [{ label: 'Viagens', data: dataViagens, backgroundColor: '#ff2efc', borderRadius: 5 }] },
             options: commonOptions
         });
 
-        // 2. Gráfico de KM (Rosca/Donut)
         new Chart(document.getElementById('chartKM'), {
             type: 'doughnut',
-            data: {
-                labels: labels,
-                datasets: [{ 
-                    data: dataKM, 
-                    backgroundColor: cores,
-                    borderColor: '#2b0e47',
-                    borderWidth: 2
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: { legend: { position: 'bottom', labels: { color: '#fff' } } }
-            }
+            data: { labels: labels, datasets: [{ data: dataKM, backgroundColor: ['#ff2efc', '#9b5cff', '#34d399', '#fbbf24', '#f87171'], borderColor: '#2b0e47', borderWidth: 2 }] },
+            options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: '#fff' } } } }
         });
 
-        // 3. Gráfico de Tempo (Barra Horizontal - NOVO)
+        // 3. Gráfico de Tempo (Barra Horizontal)
         new Chart(document.getElementById('chartTempo'), {
             type: 'bar',
             data: {
@@ -132,27 +118,22 @@ async function carregarGraficosFrota() {
                 datasets: [{ 
                     label: 'Horas em Viagem', 
                     data: dataTempo, 
-                    backgroundColor: '#34d399', // Verde Esmeralda
+                    backgroundColor: '#34d399', 
                     borderRadius: 5 
                 }]
             },
             options: { 
                 ...commonOptions, 
-                indexAxis: 'y' // Faz a barra ficar deitada (Horizontal)
+                indexAxis: 'y' // Barra deitada
             } 
         });
 
-        // 4. Gráfico de Recargas (Barra Vertical - Roxo)
+        // 4. Gráfico de Recargas
         new Chart(document.getElementById('chartRecargas'), {
             type: 'bar',
             data: {
                 labels: labels,
-                datasets: [{ 
-                    label: 'Recargas', 
-                    data: dataRecargas, 
-                    backgroundColor: '#9b5cff', 
-                    borderRadius: 5 
-                }]
+                datasets: [{ label: 'Recargas', data: dataRecargas, backgroundColor: '#9b5cff', borderRadius: 5 }]
             },
             options: commonOptions
         });
