@@ -45,7 +45,9 @@
       .admin-table tr:hover { background: rgba(255,255,255,0.05); }
       
       /* Inputs do formulário admin */
-      .admin-input { padding: 10px; border-radius: 8px; border:none; background: #fff; color: #333; }
+      .admin-input { padding: 10px; border-radius: 8px; border:none; background: #fff; color: #333; margin-bottom: 10px; }
+      .form-group { display: flex; flex-direction: column; gap: 5px; min-width: 150px; flex: 1; }
+      .form-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 12px; align-items: flex-end; }
   </style>
 </head>
 <body>
@@ -100,15 +102,42 @@
     <section class="glass dash-card" style="margin-top: 30px;">
         <h3 class="admin-section-title">Gerenciar Frota (Master)</h3>
         
-        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 12px;">
+        <div class="form-row">
             <input type="hidden" id="admin-car-id">
-            <input type="number" id="admin-marca" class="admin-input" placeholder="ID Marca">
-            <input type="number" id="admin-modelo" class="admin-input" placeholder="ID Modelo">
-            <input type="number" id="admin-ano" class="admin-input" placeholder="Ano" style="width: 100px;">
-            <input type="number" id="admin-bat" class="admin-input" placeholder="Bateria (kWh)" style="width: 120px;">
             
-            <button onclick="salvarVeiculoAdmin()" class="btn btn-primary">Salvar</button>
-            <button onclick="limparFormAdmin()" class="btn btn-outline">Limpar</button>
+            <div class="form-group">
+                <label style="color:#aaa; font-size:0.8rem">Marca Existente</label>
+                <select id="admin-marca-select" class="admin-input" onchange="toggleNovaMarca()">
+                    <option value="">Carregando...</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label style="color:#aaa; font-size:0.8rem">Ou Nova Marca</label>
+                <input type="text" id="admin-nova-marca" class="admin-input" placeholder="Digite para criar nova">
+            </div>
+
+            <div class="form-group">
+                <label style="color:#aaa; font-size:0.8rem">Modelo</label>
+                <input type="text" id="admin-nome-modelo" class="admin-input" placeholder="Ex: Dolphin, Seal...">
+            </div>
+
+            <div class="form-group" style="flex: 0 0 100px;">
+                <label style="color:#aaa; font-size:0.8rem">Ano</label>
+                <input type="number" id="admin-ano" class="admin-input" placeholder="2025">
+            </div>
+            
+            <div class="form-group" style="flex: 0 0 120px;">
+                <label style="color:#aaa; font-size:0.8rem">Bateria (kWh)</label>
+                <input type="number" id="admin-bat" class="admin-input" placeholder="60.5">
+            </div>
+            
+            <div class="form-group" style="flex: 0 0 auto;">
+                <button onclick="salvarVeiculoAdmin()" class="btn btn-primary" style="height: 42px;">Salvar</button>
+            </div>
+            <div class="form-group" style="flex: 0 0 auto;">
+                <button onclick="limparFormAdmin()" class="btn btn-outline" style="height: 42px;">Limpar</button>
+            </div>
         </div>
 
         <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
@@ -116,14 +145,15 @@
                 <thead>
                     <tr>
                         <th>ID</th>
-                        <th>Marca/Modelo</th>
+                        <th>Marca</th>
+                        <th>Modelo</th>
                         <th>Ano</th>
                         <th>Bateria</th>
                         <th>Ação</th>
                     </tr>
                 </thead>
                 <tbody id="admin-lista-veiculos">
-                    </tbody>
+                </tbody>
             </table>
         </div>
     </section>
@@ -131,44 +161,77 @@
   </main>
 
   <script>
-    // --- FUNÇÕES GLOBAIS PARA OS BOTÕES (ONCLICK) ---
+    // --- FUNÇÕES GLOBAIS ---
     
+    // Função para limpar o input de nova marca se selecionar uma existente
+    function toggleNovaMarca() {
+        const select = document.getElementById('admin-marca-select');
+        const inputNova = document.getElementById('admin-nova-marca');
+        
+        if(select.value !== "") {
+            inputNova.value = ""; // Limpa a nova marca se escolher uma existente
+        }
+    }
+
+    // Carrega as marcas no Select
+    async function carregarMarcasAdmin() {
+        const select = document.getElementById('admin-marca-select');
+        try {
+            const res = await fetch('api/admin_veiculos.php?action=marcas');
+            const marcas = await res.json();
+            
+            select.innerHTML = '<option value="">Selecione...</option>';
+            marcas.forEach(m => {
+                const opt = document.createElement('option');
+                opt.value = m.id_marca;
+                opt.textContent = m.nm_marca;
+                select.appendChild(opt);
+            });
+        } catch(e) { console.error("Erro marcas:", e); }
+    }
+
     function limparFormAdmin() {
         document.getElementById('admin-car-id').value = '';
-        document.getElementById('admin-marca').value = '';
-        document.getElementById('admin-modelo').value = '';
+        document.getElementById('admin-marca-select').value = '';
+        document.getElementById('admin-nova-marca').value = '';
+        document.getElementById('admin-nome-modelo').value = '';
         document.getElementById('admin-ano').value = '';
         document.getElementById('admin-bat').value = '';
     }
 
     function editarCarro(dataStr) {
-        // Como passamos o objeto como string no HTML, precisamos fazer parse
-        // Mas para evitar problemas de aspas, uma abordagem melhor é passar o objeto direto se fosse criado via JS puro.
-        // Aqui decodificamos:
         const c = JSON.parse(decodeURIComponent(dataStr));
 
         document.getElementById('admin-car-id').value = c.id_carro;
-        document.getElementById('admin-marca').value = c.id_marca;
-        document.getElementById('admin-modelo').value = c.id_modelo;
+        
+        // Tenta selecionar a marca no dropdown
+        document.getElementById('admin-marca-select').value = c.id_marca;
+        document.getElementById('admin-nova-marca').value = ''; // Limpa nova marca
+        
+        // Preenche o nome do modelo (agora é texto)
+        document.getElementById('admin-nome-modelo').value = c.nm_modelo;
+        
         document.getElementById('admin-ano').value = c.ano_carro;
         document.getElementById('admin-bat').value = c.dur_bat;
         
-        // Scroll suave até o formulário
         document.querySelector('.admin-section-title').scrollIntoView({ behavior: 'smooth' });
     }
 
     async function salvarVeiculoAdmin() {
         const id = document.getElementById('admin-car-id').value;
+        
         const dados = {
             id_carro: id,
-            id_marca: document.getElementById('admin-marca').value,
-            id_modelo: document.getElementById('admin-modelo').value,
+            id_marca: document.getElementById('admin-marca-select').value,
+            nova_marca: document.getElementById('admin-nova-marca').value,
+            nome_modelo: document.getElementById('admin-nome-modelo').value,
             ano: document.getElementById('admin-ano').value,
             bateria: document.getElementById('admin-bat').value
         };
 
-        if(!dados.id_marca || !dados.id_modelo || !dados.ano || !dados.bateria) {
-            alert("Preencha todos os campos!");
+        // Validação simples
+        if((!dados.id_marca && !dados.nova_marca) || !dados.nome_modelo || !dados.ano || !dados.bateria) {
+            alert("Preencha a Marca (selecione ou crie), o Modelo, Ano e Bateria!");
             return;
         }
 
@@ -187,17 +250,17 @@
             } else {
                 alert(res.message);
                 limparFormAdmin();
-                carregarFrotaAdmin(); // Recarrega a tabela
+                carregarFrotaAdmin(); 
+                carregarMarcasAdmin(); // Recarrega marcas caso tenha criado uma nova
             }
         } catch(e) { 
-            alert("Erro na requisição. Verifique o console.");
+            alert("Erro na requisição.");
             console.error(e); 
         }
     }
 
     async function carregarFrotaAdmin() {
         const tbody = document.getElementById('admin-lista-veiculos');
-        //tbody.innerHTML = '<tr><td colspan="5">Carregando...</td></tr>';
         
         try {
             const req = await fetch('api/admin_veiculos.php');
@@ -205,23 +268,23 @@
             
             tbody.innerHTML = '';
             if(carros.error) { 
-                tbody.innerHTML = `<tr><td colspan="5" style="color:red">${carros.error}</td></tr>`; 
+                tbody.innerHTML = `<tr><td colspan="6" style="color:red">${carros.error}</td></tr>`; 
                 return; 
             }
 
             if(carros.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5">Nenhum veículo cadastrado.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6">Nenhum veículo cadastrado.</td></tr>`;
                 return;
             }
 
             carros.forEach(c => {
-                // Truque para passar objeto no onclick
                 const jsonStr = encodeURIComponent(JSON.stringify(c));
                 
                 tbody.innerHTML += `
                     <tr>
                         <td>${c.id_carro}</td>
-                        <td>${c.nm_marca} ${c.nm_modelo} <small style="color:#aaa">(${c.id_marca}/${c.id_modelo})</small></td>
+                        <td>${c.nm_marca}</td>
+                        <td>${c.nm_modelo}</td>
                         <td>${c.ano_carro}</td>
                         <td>${c.dur_bat} kWh</td>
                         <td>
@@ -235,96 +298,75 @@
         } catch(e) { console.error(e); }
     }
 
-    // --- INICIALIZAÇÃO DA PÁGINA ---
-
+    // --- INICIALIZAÇÃO ---
     document.addEventListener('DOMContentLoaded', async () => {
-        // 1. Verifica sessão e permissão admin
+        // Verifica Sessão
         try {
             const sessionResp = await fetch('api/verificar_sessao.php');
             const session = await sessionResp.json();
-            
-            // Verifica se está logado E se é admin (convertendo para bool caso venha 0/1 ou string)
             const isAdmin = (session.isAdmin === true || session.isAdmin === "true" || session.isAdmin === 1);
 
             if (!session.loggedIn || !isAdmin) {
-                alert('Acesso restrito! Redirecionando...');
+                alert('Acesso restrito!');
                 window.location.href = 'dashboard.html';
                 return;
             }
-        } catch(e) { 
-            console.error("Erro sessão:", e);
-            window.location.href = 'login.html'; 
-        }
+        } catch(e) { window.location.href = 'login.html'; }
 
-        // 2. Carrega a tabela de veículos
+        // Carrega Dados Iniciais
+        carregarMarcasAdmin();
         carregarFrotaAdmin();
-
-        // 3. Busca dados gerais (KPIs e Gráficos)
+        
+        // Carrega KPIs e Gráficos (mantido do original)
         try {
             const res = await fetch('api/admin_dados.php');
             const dados = await res.json();
-
-            if(dados.error) { 
-                console.error(dados.error); 
-                return; 
-            }
-
-            // Preenche KPIs
-            document.getElementById('kpi-users').innerText = dados.kpis.total_users || 0;
-            document.getElementById('kpi-viagens').innerText = dados.kpis.total_viagens || 0;
-            document.getElementById('kpi-carros').innerText = dados.kpis.total_carros || 0;
-
-            // Preenche Lista de Usuários
-            const lista = document.getElementById('lista-users');
-            lista.innerHTML = '';
             
-            if (dados.usuarios.length === 0) {
-                lista.innerHTML = '<p class="muted">Nenhum dado encontrado.</p>';
-            } else {
-                dados.usuarios.forEach(u => {
-                    lista.innerHTML += `
-                        <div class="history-item-mini" style="border-left: 3px solid #ffd700;">
-                            <div class="history-icon" style="color:#ffd700; background:rgba(255,215,0,0.1);">
-                                <i class="fa-solid fa-user"></i>
-                            </div>
-                            <div class="history-info">
-                                <strong style="color: #fff;">${u.nome_completo}</strong>
-                                <span>${u.email}</span>
-                                <span style="display:block; font-size:0.8em; color:#ffd700;">${u.total_viagens} viagens • ${parseFloat(u.km_total || 0).toFixed(0)} km</span>
-                            </div>
-                        </div>`;
-                });
-            }
+            if(!dados.error) {
+                document.getElementById('kpi-users').innerText = dados.kpis.total_users || 0;
+                document.getElementById('kpi-viagens').innerText = dados.kpis.total_viagens || 0;
+                document.getElementById('kpi-carros').innerText = dados.kpis.total_carros || 0;
 
-            // Renderiza Gráfico Chart.js (Destinos)
-            const ctx = document.getElementById('chartDestinos').getContext('2d');
-            const labels = dados.destinos.map(d => d.cidade_destino);
-            const values = dados.destinos.map(d => d.total_viagens);
-
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Total de Viagens',
-                        data: values,
-                        backgroundColor: '#ffd700',
-                        borderRadius: 4,
-                        barThickness: 30
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: { 
-                        y: { ticks: { color: '#fff' }, grid: { color: 'rgba(255,255,255,0.1)' } },
-                        x: { ticks: { color: '#fff' }, grid: { display: false } }
-                    }
+                const lista = document.getElementById('lista-users');
+                lista.innerHTML = '';
+                if(dados.usuarios) {
+                    dados.usuarios.forEach(u => {
+                        lista.innerHTML += `
+                            <div class="history-item-mini" style="border-left: 3px solid #ffd700;">
+                                <div class="history-icon" style="color:#ffd700; background:rgba(255,215,0,0.1);">
+                                    <i class="fa-solid fa-user"></i>
+                                </div>
+                                <div class="history-info">
+                                    <strong style="color: #fff;">${u.nome_completo}</strong>
+                                    <span>${u.email}</span>
+                                    <span style="display:block; font-size:0.8em; color:#ffd700;">${u.total_viagens} viagens</span>
+                                </div>
+                            </div>`;
+                    });
                 }
-            });
 
-        } catch (e) { console.error("Erro dashboard admin:", e); }
+                // Gráfico
+                if(document.getElementById('chartDestinos') && dados.destinos) {
+                    const ctx = document.getElementById('chartDestinos').getContext('2d');
+                    new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: dados.destinos.map(d => d.cidade_destino),
+                            datasets: [{
+                                label: 'Viagens',
+                                data: dados.destinos.map(d => d.total_viagens),
+                                backgroundColor: '#ffd700'
+                            }]
+                        },
+                        options: { 
+                            responsive: true, maintainAspectRatio: false,
+                            plugins: { legend: { display: false } },
+                            scales: { y: { ticks: { color: '#fff' } }, x: { ticks: { color: '#fff' } } }
+                        }
+                    });
+                }
+            }
+        } catch (e) { console.error(e); }
     });
   </script>
 </body>
