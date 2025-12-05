@@ -5,8 +5,9 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(res => res.json())
         .then(session => {
             if (session.loggedIn) {
-                // Carrega todas as novas seções
+                // Carrega todas as seções
                 carregarResumoUsuario();
+                carregarSustentabilidade(); // <--- NOVA FUNÇÃO ADICIONADA AQUI
                 carregarHistoricoDetalhado();
                 carregarGraficosFrota();
             } else {
@@ -30,6 +31,23 @@ async function carregarResumoUsuario() {
     } catch (e) { console.error("Erro resumo:", e); }
 }
 
+// --- 1.5. SUSTENTABILIDADE (Impacto Ambiental) ---
+async function carregarSustentabilidade() {
+    try {
+        const response = await fetch('api/dados_sustentabilidade.php');
+        const data = await response.json();
+
+        if (!data.error) {
+             const co2 = document.getElementById('eco-co2');
+             const arvores = document.getElementById('eco-arvores');
+             
+             // Preenche os valores ou 0 se estiver vazio
+             if(co2) co2.textContent = data.kg_co2_poupados || 0;
+             if(arvores) arvores.textContent = data.arvores_equivalentes || 0;
+        }
+    } catch (e) { console.error("Erro ao carregar sustentabilidade:", e); }
+}
+
 // --- 2. GRÁFICOS E TABELA DE DESEMPENHO (Meio da página) ---
 async function carregarGraficosFrota() {
     try {
@@ -46,7 +64,6 @@ async function carregarGraficosFrota() {
         const labels = [];
         const dataViagens = [];
         const dataKM = [];
-        // const dataTempo = []; // REMOVIDO: Variável não mais necessária
         const dataRecargas = [];
 
         dados.forEach(carro => {
@@ -59,14 +76,10 @@ async function carregarGraficosFrota() {
             row.insertCell().textContent = carro.total_recargas;
 
             // Preenche os Arrays dos Gráficos
-            
-            // ALTERAÇÃO: Removido o .split(' ')[0] para mostrar o nome completo (Marca + Modelo)
-            // Agora aparecerá o modelo conforme solicitado.
             labels.push(carro.nome_veiculo); 
             
             dataViagens.push(carro.total_viagens);
             dataKM.push(parseFloat(carro.km_total_rodado));
-            // dataTempo.push(parseFloat(carro.total_horas || 0)); // REMOVIDO
             dataRecargas.push(carro.total_recargas);
         });
 
@@ -81,7 +94,7 @@ async function carregarGraficosFrota() {
             }
         };
 
-        // 1. Gráfico de Viagens (Barra Vertical) - Mantido
+        // 1. Gráfico de Viagens (Barra Vertical)
         new Chart(document.getElementById('chartViagens'), {
             type: 'bar',
             data: {
@@ -91,7 +104,7 @@ async function carregarGraficosFrota() {
             options: commonOptions
         });
 
-        // 2. Gráfico de KM (Rosca/Donut) - Mantido
+        // 2. Gráfico de KM (Rosca/Donut)
         new Chart(document.getElementById('chartKM'), {
             type: 'doughnut',
             data: {
@@ -109,29 +122,19 @@ async function carregarGraficosFrota() {
             }
         });
 
-        // 3. Gráfico de Tempo (REMOVIDO COMPLETO)
-        /*
-        new Chart(document.getElementById('chartTempo'), {
-            type: 'bar',
-            data: { labels: labels, datasets: [...] },
-            options: { ...commonOptions, indexAxis: 'y' }
-        });
-        */
-
-        // 4. Gráfico de Recargas (ALTERADO de Pie para Bar)
-        // Agora está igual ao de Viagens, mas com uma cor diferente para diferenciar
+        // 3. Gráfico de Recargas (Barra Vertical - Roxo)
         new Chart(document.getElementById('chartRecargas'), {
-            type: 'bar', // Mudado de 'pie' para 'bar'
+            type: 'bar',
             data: {
                 labels: labels,
                 datasets: [{ 
                     label: 'Recargas', 
                     data: dataRecargas, 
-                    backgroundColor: '#9b5cff', // Roxo (brand-2)
+                    backgroundColor: '#9b5cff', 
                     borderRadius: 5 
                 }]
             },
-            options: commonOptions // Usa as mesmas opções de grade e eixos do gráfico de viagens
+            options: commonOptions
         });
 
     } catch (e) { console.error("Erro ao gerar gráficos:", e); }
