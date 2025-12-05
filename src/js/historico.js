@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Carrega todas as novas seções
                 carregarResumoUsuario();
                 carregarHistoricoDetalhado();
-                carregarGraficosFrota(); // Essa função cria os 4 gráficos novos
+                carregarGraficosFrota();
             } else {
                 window.location.href = 'login.html'; 
             }
@@ -33,7 +33,6 @@ async function carregarResumoUsuario() {
 // --- 2. GRÁFICOS E TABELA DE DESEMPENHO (Meio da página) ---
 async function carregarGraficosFrota() {
     try {
-        // Usa a view atualizada que tem todos os dados (tempo, recargas, km)
         const response = await fetch('api/desempenho_carros.php');
         const dados = await response.json();
 
@@ -47,7 +46,7 @@ async function carregarGraficosFrota() {
         const labels = [];
         const dataViagens = [];
         const dataKM = [];
-        const dataTempo = [];
+        // const dataTempo = []; // REMOVIDO: Variável não mais necessária
         const dataRecargas = [];
 
         dados.forEach(carro => {
@@ -60,11 +59,14 @@ async function carregarGraficosFrota() {
             row.insertCell().textContent = carro.total_recargas;
 
             // Preenche os Arrays dos Gráficos
-            // Pega apenas a primeira parte do nome para o gráfico não ficar poluido
-            labels.push(carro.nome_veiculo.split(' ')[0]); 
+            
+            // ALTERAÇÃO: Removido o .split(' ')[0] para mostrar o nome completo (Marca + Modelo)
+            // Agora aparecerá o modelo conforme solicitado.
+            labels.push(carro.nome_veiculo); 
+            
             dataViagens.push(carro.total_viagens);
             dataKM.push(parseFloat(carro.km_total_rodado));
-            dataTempo.push(parseFloat(carro.total_horas || 0));
+            // dataTempo.push(parseFloat(carro.total_horas || 0)); // REMOVIDO
             dataRecargas.push(carro.total_recargas);
         });
 
@@ -79,7 +81,7 @@ async function carregarGraficosFrota() {
             }
         };
 
-        // 1. Gráfico de Viagens (Barra Vertical)
+        // 1. Gráfico de Viagens (Barra Vertical) - Mantido
         new Chart(document.getElementById('chartViagens'), {
             type: 'bar',
             data: {
@@ -89,7 +91,7 @@ async function carregarGraficosFrota() {
             options: commonOptions
         });
 
-        // 2. Gráfico de KM (Rosca/Donut)
+        // 2. Gráfico de KM (Rosca/Donut) - Mantido
         new Chart(document.getElementById('chartKM'), {
             type: 'doughnut',
             data: {
@@ -107,32 +109,29 @@ async function carregarGraficosFrota() {
             }
         });
 
-        // 3. Gráfico de Tempo (Barra Horizontal)
+        // 3. Gráfico de Tempo (REMOVIDO COMPLETO)
+        /*
         new Chart(document.getElementById('chartTempo'), {
             type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [{ label: 'Horas', data: dataTempo, backgroundColor: '#34d399', borderRadius: 5 }]
-            },
-            options: { ...commonOptions, indexAxis: 'y' } // 'y' faz a barra ficar deitada
+            data: { labels: labels, datasets: [...] },
+            options: { ...commonOptions, indexAxis: 'y' }
         });
+        */
 
-        // 4. Gráfico de Recargas (Pizza/Pie)
+        // 4. Gráfico de Recargas (ALTERADO de Pie para Bar)
+        // Agora está igual ao de Viagens, mas com uma cor diferente para diferenciar
         new Chart(document.getElementById('chartRecargas'), {
-            type: 'pie',
+            type: 'bar', // Mudado de 'pie' para 'bar'
             data: {
                 labels: labels,
                 datasets: [{ 
+                    label: 'Recargas', 
                     data: dataRecargas, 
-                    backgroundColor: cores,
-                    borderColor: '#2b0e47',
-                    borderWidth: 2
+                    backgroundColor: '#9b5cff', // Roxo (brand-2)
+                    borderRadius: 5 
                 }]
             },
-            options: {
-                responsive: true,
-                plugins: { legend: { position: 'bottom', labels: { color: '#fff' } } }
-            }
+            options: commonOptions // Usa as mesmas opções de grade e eixos do gráfico de viagens
         });
 
     } catch (e) { console.error("Erro ao gerar gráficos:", e); }
@@ -157,13 +156,10 @@ async function carregarHistoricoDetalhado() {
 
         historico.forEach(v => {
             const row = tbody.insertRow();
-            
-            // Formata data
             const dataF = new Date(v.dt_consulta).toLocaleDateString('pt-BR');
             
             row.insertCell().textContent = dataF;
             
-            // Formata trajeto com setinha
             row.insertCell().innerHTML = `
                 <div style="font-weight:600; color:#fff">${v.cidade_destino}</div>
                 <div style="font-size:0.85rem; color:#aaa">De: ${v.cidade_origem}</div>
