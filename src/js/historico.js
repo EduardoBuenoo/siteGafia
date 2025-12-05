@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (session.loggedIn) {
                 // Carrega todas as seções
                 carregarResumoUsuario();
-                carregarSustentabilidade(); // <--- NOVA FUNÇÃO ADICIONADA AQUI
+                carregarSustentabilidade();
                 carregarHistoricoDetalhado();
                 carregarGraficosFrota();
             } else {
@@ -64,22 +64,24 @@ async function carregarGraficosFrota() {
         const labels = [];
         const dataViagens = [];
         const dataKM = [];
+        const dataTempo = []; // Array para as Horas
         const dataRecargas = [];
 
         dados.forEach(carro => {
-            // Preenche a Tabela
+            // Preenche a Tabela (HTML)
             const row = tbody.insertRow();
             row.insertCell().textContent = carro.nome_veiculo;
             row.insertCell().textContent = `${parseFloat(carro.km_total_rodado).toFixed(0)} km`;
             row.insertCell().textContent = carro.total_viagens;
-            row.insertCell().textContent = `${carro.total_horas} h`;
+            row.insertCell().textContent = `${carro.total_horas} h`; // Valor vindo da View atualizada
             row.insertCell().textContent = carro.total_recargas;
 
-            // Preenche os Arrays dos Gráficos
+            // Preenche os Arrays dos Gráficos (JS)
             labels.push(carro.nome_veiculo); 
             
             dataViagens.push(carro.total_viagens);
             dataKM.push(parseFloat(carro.km_total_rodado));
+            dataTempo.push(parseFloat(carro.total_horas || 0)); // Preenche dados do gráfico de tempo
             dataRecargas.push(carro.total_recargas);
         });
 
@@ -122,7 +124,25 @@ async function carregarGraficosFrota() {
             }
         });
 
-        // 3. Gráfico de Recargas (Barra Vertical - Roxo)
+        // 3. Gráfico de Tempo (Barra Horizontal - NOVO)
+        new Chart(document.getElementById('chartTempo'), {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{ 
+                    label: 'Horas em Viagem', 
+                    data: dataTempo, 
+                    backgroundColor: '#34d399', // Verde Esmeralda
+                    borderRadius: 5 
+                }]
+            },
+            options: { 
+                ...commonOptions, 
+                indexAxis: 'y' // Faz a barra ficar deitada (Horizontal)
+            } 
+        });
+
+        // 4. Gráfico de Recargas (Barra Vertical - Roxo)
         new Chart(document.getElementById('chartRecargas'), {
             type: 'bar',
             data: {

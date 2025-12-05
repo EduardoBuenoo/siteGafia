@@ -1,164 +1,20 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Histórico de Viagens</title>
-
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="src/style/perfil.css"> 
-  <link rel="icon" href="src/img/Gafialogo.png" type="image/png">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
-
-  <style>
-    /* Estilos extras para o Grid de Gráficos */
-    .charts-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 20px;
-        margin-bottom: 30px;
-        width: 100%;
-    }
-    .chart-box {
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 16px;
-        padding: 20px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-    .chart-box h3 {
-        color: #e6d6ff;
-        font-size: 1rem;
-        margin-bottom: 15px;
-        text-align: center;
-    }
-    canvas {
-        max-width: 100%;
-        max-height: 250px;
-    }
-    /* Estilos da tabela */
-    .table-responsive { overflow-x: auto; width: 100%; margin-bottom: 20px; }
-    table { width: 100%; border-collapse: collapse; }
-    th, td { padding: 12px 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.9rem; }
-    th { background: rgba(255,255,255,0.05); font-weight: 600; color: #fff; }
-    tbody tr:hover { background: rgba(255,255,255,0.03); }
-  </style>
-</head>
-<body>
-
-<input type="checkbox" id="nav-toggle-internal">
-
-<aside class="menu-lateral">
-    <button class="btn-voltar" id="btn-voltar-dinamico">
-        <i class="fa-solid fa-arrow-left"></i> Início
-    </button>
-    <div class="brand"><i class="fa-solid fa-clock-rotate-left"></i> Histórico</div>
+<div class="charts-grid full">
+    <div class="chart-box">
+        <h3>Viagens por Carro</h3>
+        <canvas id="chartViagens"></canvas>
+    </div>
+    <div class="chart-box">
+        <h3>KM Rodados</h3>
+        <canvas id="chartKM"></canvas>
+    </div>
     
-    <label for="nav-toggle-internal" class="hamburger-label">
-        <span></span><span></span><span></span>
-    </label>
-
-    <nav>
-        <ul>
-          <li><a href="perfil.html"><i class="fa-solid fa-user"></i> Minha conta</a></li>
-          <li><a href="senha.html"><i class="fa-solid fa-lock"></i> Alterar senha</a></li>
-          <li><a href="historico.html" class="active"><i class="fa-solid fa-clock-rotate-left"></i> Históricos</a></li>
-          <li><a href="veiculos.html"><i class="fa-solid fa-car"></i> Garagem</a></li>
-        </ul>
-    </nav>
-</aside>
-
-<div class="main-wrap">
-  <section class="vidro">
-    <h1>Histórico de Atividades</h1>
-
-    <div class="profile-grid full">
-      <p style="color:#e6d6ff; font-size:1rem;">
-        • Total de rotas: <strong id="total-viagens">...</strong> <br>
-        • Total de Km: <strong id="total-km">...</strong> <br>
-        • Recargas totais: <strong id="total-abastecimentos">...</strong>
-      </p>
+    <div class="chart-box">
+        <h3>Tempo de Uso (Horas)</h3>
+        <canvas id="chartTempo"></canvas>
     </div>
 
-    <h2 class="section-title full" style="margin-top: 20px; color: #34d399;">Impacto Ambiental 🌱</h2>
-    
-    <div class="charts-grid full">
-        <div class="chart-box" style="border-color: #34d399; background: rgba(52, 211, 153, 0.05);">
-            <i class="fa-solid fa-leaf" style="font-size: 2rem; color: #34d399; margin-bottom: 10px;"></i>
-            <h3 style="color: #34d399;">CO₂ Evitado</h3>
-            <p style="font-size: 1.5rem; font-weight: bold; color: #fff;">
-                <span id="eco-co2">0</span> <small style="font-size: 0.8rem;">kg</small>
-            </p>
-            <span style="font-size: 0.8rem; color: #aaa;">Em comparação a carros a combustão</span>
-        </div>
-
-        <div class="chart-box" style="border-color: #34d399; background: rgba(52, 211, 153, 0.05);">
-            <i class="fa-solid fa-tree" style="font-size: 2rem; color: #34d399; margin-bottom: 10px;"></i>
-            <h3 style="color: #34d399;">Árvores Salvas</h3>
-            <p style="font-size: 1.5rem; font-weight: bold; color: #fff;">
-                <span id="eco-arvores">0</span>
-            </p>
-            <span style="font-size: 0.8rem; color: #aaa;">Equivalente em absorção de carbono</span>
-        </div>
+    <div class="chart-box">
+        <h3>Recargas Realizadas</h3>
+        <canvas id="chartRecargas"></canvas>
     </div>
-    <hr class="full" style="margin: 25px 0; border-color: rgba(255,255,255,0.15);">
-    
-    <h2 class="section-title full">Estatísticas da Frota</h2>
-    
-    <div class="charts-grid full">
-        <div class="chart-box">
-            <h3>Viagens por Carro</h3>
-            <canvas id="chartViagens"></canvas>
-        </div>
-        <div class="chart-box">
-            <h3>KM Rodados</h3>
-            <canvas id="chartKM"></canvas>
-        </div>
-        <div class="chart-box">
-            <h3>Recargas Realizadas</h3>
-            <canvas id="chartRecargas"></canvas>
-        </div>
-    </div>
-
-    <hr class="full" style="margin: 25px 0; border-color: rgba(255,255,255,0.15);">
-
-    <h2 class="section-title full">Detalhes de Desempenho</h2>
-    <div class="table-responsive">
-        <table id="tabela-desempenho">
-            <thead>
-                <tr>
-                    <th>Veículo</th>
-                    <th>KM Total</th>
-                    <th>Viagens</th>
-                    <th>Horas</th> <th>Recargas</th> </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
-    </div>
-
-    <h2 class="section-title full" style="margin-top: 30px;">Diário de Bordo</h2>
-    <div id="historico-loading" class="full" style="text-align: center; color: #ddd; padding: 10px;">Carregando...</div>
-    <div class="table-responsive">
-        <table id="tabela-historico">
-            <thead>
-                <tr>
-                    <th>Data</th>
-                    <th>Trajeto</th>
-                    <th>Veículo</th>
-                    <th>KM</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
-    </div>
-
-  </section>
 </div>
-
-<script src="src/js/main.js"></script>
-<script src="src/js/historico.js"></script>
-
-</body>
-</html>
