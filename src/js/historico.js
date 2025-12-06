@@ -33,7 +33,7 @@ async function carregarResumoUsuario() {
             document.getElementById('val-recargas').textContent = recargas;
 
             // --- Função para criar Gráfico de Rosca com Gradiente ---
-            const createGradientDonut = (canvasId, colorStart, colorEnd) => {
+            const createGradientDonut = (canvasId, colorStart, colorEnd, isTall = false) => {
                 const ctx = document.getElementById(canvasId).getContext('2d');
                 
                 // Cria o gradiente
@@ -49,23 +49,24 @@ async function carregarResumoUsuario() {
                             data: [100], // 100% preenchido
                             backgroundColor: [gradient],
                             borderWidth: 0,
-                            borderRadius: 10, // Bordas arredondadas (só visível se não for 100%)
+                            borderRadius: 10, // Bordas arredondadas
                             cutout: '85%',    // Espessura fina
                         },
                         {
-                            // Anel de fundo (Track) para dar profundidade
+                            // Anel de fundo (Track)
                             data: [100],
                             backgroundColor: '#ffffff0a', // Cinza bem transparente
                             borderWidth: 0,
                             cutout: '85%',
-                            weight: 0.8 // Fica levemente atrás/menor visualmente se ajustado
+                            weight: 0.8 
                         }]
                     },
                     options: {
+                        // Se for alto (isTall=true), desliga a proporção automática para ele crescer
+                        maintainAspectRatio: !isTall, 
                         responsive: true,
-                        maintainAspectRatio: false,
                         plugins: { tooltip: { enabled: false }, legend: { display: false } },
-                        events: [], // Estático, sem interação
+                        events: [], // Estático
                         animation: {
                             animateScale: true,
                             animateRotate: true
@@ -75,9 +76,10 @@ async function carregarResumoUsuario() {
             };
 
             // Gera os 3 gráficos com cores Neon/Gradiente
-            createGradientDonut('chartResumoViagens', '#ff2efc', '#bc13fe'); // Rosa -> Roxo
-            createGradientDonut('chartResumoKm', '#34d399', '#059669');      // Verde Claro -> Escuro
-            createGradientDonut('chartResumoRecargas', '#a78bfa', '#7c3aed'); // Roxo Claro -> Escuro
+            // O Segundo (KM) tem o parametro true para ser ALTO
+            createGradientDonut('chartResumoViagens', '#ff2efc', '#bc13fe'); // Rosa
+            createGradientDonut('chartResumoKm', '#34d399', '#059669', true);      // Verde (GRANDE)
+            createGradientDonut('chartResumoRecargas', '#a78bfa', '#7c3aed'); // Roxo
         }
     } catch (e) { console.error("Erro resumo:", e); }
 }
@@ -157,7 +159,7 @@ async function carregarGraficosFrota() {
             options: commonOptions
         });
 
-        // 2. KM (Rosca)
+        // 2. KM (Rosca) - AGORA TAMBÉM GRANDE/ALTO
         new Chart(document.getElementById('chartKM'), {
             type: 'doughnut',
             data: {
@@ -165,14 +167,15 @@ async function carregarGraficosFrota() {
                 datasets: [{ 
                     data: dataKM, 
                     backgroundColor: ['#ff2efc', '#9b5cff', '#34d399', '#fbbf24', '#f87171'],
-                    borderColor: '#1e0b36', // Cor do fundo para separar fatias
+                    borderColor: '#1e0b36', 
                     borderWidth: 4
                 }]
             },
             options: {
                 responsive: true,
-                cutout: '70%',
-                plugins: { legend: { position: 'right', labels: { color: '#fff', boxWidth: 12 } } }
+                maintainAspectRatio: false, // <--- PERMITE ESTICAR
+                cutout: '60%', 
+                plugins: { legend: { position: 'bottom', labels: { color: '#fff', boxWidth: 12 } } }
             }
         });
 
