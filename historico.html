@@ -14,7 +14,7 @@
     /* Estilos extras para o Grid de Gráficos */
     .charts-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
         gap: 20px;
         margin-bottom: 30px;
         width: 100%;
@@ -27,6 +27,7 @@
         display: flex;
         flex-direction: column;
         align-items: center;
+        position: relative;
     }
     .chart-box h3 {
         color: #e6d6ff;
@@ -36,8 +37,22 @@
     }
     canvas {
         max-width: 100%;
-        max-height: 250px;
+        max-height: 200px;
     }
+    
+    /* Estilo para o número centralizado no gráfico de Donut */
+    .chart-number {
+        position: absolute;
+        top: 58%; /* Ajuste fino para centralizar verticalmente */
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #fff;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        pointer-events: none;
+    }
+
     /* Estilos da tabela */
     .table-responsive { overflow-x: auto; width: 100%; margin-bottom: 20px; }
     table { width: 100%; border-collapse: collapse; }
@@ -74,12 +89,22 @@
   <section class="vidro">
     <h1>Histórico de Atividades</h1>
 
-    <div class="profile-grid full">
-      <p style="color:#e6d6ff; font-size:1rem;">
-        • Total de rotas: <strong id="total-viagens">...</strong> <br>
-        • Total de Km: <strong id="total-km">...</strong> <br>
-        • Recargas totais: <strong id="total-abastecimentos">...</strong>
-      </p>
+    <div class="charts-grid full">
+        <div class="chart-box">
+            <h3>Total de Rotas</h3>
+            <canvas id="chartResumoViagens"></canvas>
+            <div id="val-viagens" class="chart-number">0</div>
+        </div>
+        <div class="chart-box">
+            <h3>Total de Km</h3>
+            <canvas id="chartResumoKm"></canvas>
+            <div id="val-km" class="chart-number">0</div>
+        </div>
+        <div class="chart-box">
+            <h3>Recargas Totais</h3>
+            <canvas id="chartResumoRecargas"></canvas>
+            <div id="val-recargas" class="chart-number">0</div>
+        </div>
     </div>
 
     <h2 class="section-title full" style="margin-top: 20px; color: #34d399;">Impacto Ambiental 🌱</h2>
@@ -103,6 +128,7 @@
             <span style="font-size: 0.8rem; color: #aaa;">Equivalente em absorção de carbono</span>
         </div>
     </div>
+    
     <hr class="full" style="margin: 25px 0; border-color: rgba(255,255,255,0.15);">
     
     <h2 class="section-title full">Estatísticas da Frota</h2>
@@ -117,11 +143,6 @@
             <canvas id="chartKM"></canvas>
         </div>
         
-        <div class="chart-box">
-            <h3>Tempo de Uso (Horas)</h3>
-            <canvas id="chartTempo"></canvas>
-        </div>
-
         <div class="chart-box">
             <h3>Recargas Realizadas</h3>
             <canvas id="chartRecargas"></canvas>
