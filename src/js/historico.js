@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(res => res.json())
         .then(session => {
             if (session.loggedIn) {
+                // Carrega todas as seções
                 carregarResumoUsuario();
                 carregarSustentabilidade();
                 carregarHistoricoDetalhado();
@@ -16,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
         .catch(error => console.error('Erro de sessão:', error));
 });
 
-// --- 1. RESUMO GERAL (Gráficos Elegantes) ---
+// --- 1. RESUMO GERAL (Topo - Gráficos Elegantes) ---
 async function carregarResumoUsuario() {
     try {
         const response = await fetch('api/resumo_usuario.php');
@@ -27,12 +28,12 @@ async function carregarResumoUsuario() {
             const km = parseFloat(data.total_km || 0).toFixed(0);
             const recargas = data.total_abastecimentos || 0;
 
-            // Atualiza apenas o número no HTML
+            // Atualiza os números no centro dos gráficos
             document.getElementById('val-viagens').textContent = viagens;
             document.getElementById('val-km').textContent = km;
             document.getElementById('val-recargas').textContent = recargas;
 
-            // --- Função para criar Gráfico de Rosca com Gradiente ---
+            // Função para criar os gráficos de rosca com gradiente
             const createGradientDonut = (canvasId, colorStart, colorEnd, isTall = false) => {
                 const ctx = document.getElementById(canvasId).getContext('2d');
                 
@@ -49,20 +50,20 @@ async function carregarResumoUsuario() {
                             data: [100], // 100% preenchido
                             backgroundColor: [gradient],
                             borderWidth: 0,
-                            borderRadius: 10, // Bordas arredondadas
-                            cutout: '85%',    // Espessura fina
+                            borderRadius: 10,
+                            cutout: '85%',
                         },
                         {
-                            // Anel de fundo (Track)
+                            // Anel de fundo
                             data: [100],
-                            backgroundColor: '#ffffff0a', // Cinza bem transparente
+                            backgroundColor: '#ffffff0a',
                             borderWidth: 0,
                             cutout: '85%',
                             weight: 0.8 
                         }]
                     },
                     options: {
-                        // Se for alto (isTall=true), desliga a proporção automática para ele crescer
+                        // Se for o gráfico ALTO (do meio), permite esticar. Se não, mantém quadrado.
                         maintainAspectRatio: !isTall, 
                         responsive: true,
                         plugins: { tooltip: { enabled: false }, legend: { display: false } },
@@ -75,11 +76,10 @@ async function carregarResumoUsuario() {
                 });
             };
 
-            // Gera os 3 gráficos com cores Neon/Gradiente
-            // O Segundo (KM) tem o parametro true para ser ALTO
-            createGradientDonut('chartResumoViagens', '#ff2efc', '#bc13fe'); // Rosa
-            createGradientDonut('chartResumoKm', '#34d399', '#059669', true);      // Verde (GRANDE)
-            createGradientDonut('chartResumoRecargas', '#a78bfa', '#7c3aed'); // Roxo
+            // Gera os 3 gráficos do topo
+            createGradientDonut('chartResumoViagens', '#ff2efc', '#bc13fe'); 
+            createGradientDonut('chartResumoKm', '#34d399', '#059669', true); // <--- Este fica ALTO (box-alto no HTML)
+            createGradientDonut('chartResumoRecargas', '#a78bfa', '#7c3aed'); 
         }
     } catch (e) { console.error("Erro resumo:", e); }
 }
@@ -100,7 +100,7 @@ async function carregarSustentabilidade() {
     } catch (e) { console.error("Erro sustentabilidade:", e); }
 }
 
-// --- 2. GRÁFICOS DA FROTA ---
+// --- 2. GRÁFICOS DA FROTA (Corrigido para evitar distorção) ---
 async function carregarGraficosFrota() {
     try {
         const response = await fetch('api/desempenho_carros.php');
@@ -119,7 +119,7 @@ async function carregarGraficosFrota() {
         dados.forEach(carro => {
             const horas = parseFloat(carro.total_horas || 0);
 
-            // Tabela
+            // Preenche Tabela
             const row = tbody.insertRow();
             row.insertCell().textContent = carro.nome_veiculo;
             row.insertCell().textContent = `${parseFloat(carro.km_total_rodado).toFixed(0)} km`;
@@ -127,13 +127,14 @@ async function carregarGraficosFrota() {
             row.insertCell().textContent = `${horas} h`; 
             row.insertCell().textContent = carro.total_recargas;
 
-            // Arrays
+            // Preenche Gráficos
             labels.push(carro.nome_veiculo); 
             dataViagens.push(carro.total_viagens);
             dataKM.push(parseFloat(carro.km_total_rodado));
             dataRecargas.push(carro.total_recargas);
         });
 
+        // Opções comuns para Barras
         const commonOptions = {
             responsive: true,
             plugins: { legend: { display: false } },
@@ -148,18 +149,12 @@ async function carregarGraficosFrota() {
             type: 'bar',
             data: {
                 labels: labels,
-                datasets: [{ 
-                    label: 'Viagens', 
-                    data: dataViagens, 
-                    backgroundColor: '#ff2efc', 
-                    borderRadius: 6,
-                    barThickness: 20
-                }]
+                datasets: [{ label: 'Viagens', data: dataViagens, backgroundColor: '#ff2efc', borderRadius: 6, barThickness: 20 }]
             },
             options: commonOptions
         });
 
-        // 2. KM (Rosca) - AGORA TAMBÉM GRANDE/ALTO
+        // 2. KM (Rosca) - CORREÇÃO AQUI
         new Chart(document.getElementById('chartKM'), {
             type: 'doughnut',
             data: {
@@ -173,9 +168,9 @@ async function carregarGraficosFrota() {
             },
             options: {
                 responsive: true,
-                maintainAspectRatio: false, // <--- PERMITE ESTICAR
+                maintainAspectRatio: true, // <--- GARANTE QUE FIQUE REDONDO/QUADRADO
                 cutout: '60%', 
-                plugins: { legend: { position: 'bottom', labels: { color: '#fff', boxWidth: 12 } } }
+                plugins: { legend: { position: 'right', labels: { color: '#fff', boxWidth: 12 } } }
             }
         });
 
@@ -184,13 +179,7 @@ async function carregarGraficosFrota() {
             type: 'bar',
             data: {
                 labels: labels,
-                datasets: [{ 
-                    label: 'Recargas', 
-                    data: dataRecargas, 
-                    backgroundColor: '#9b5cff', 
-                    borderRadius: 6,
-                    barThickness: 20
-                }]
+                datasets: [{ label: 'Recargas', data: dataRecargas, backgroundColor: '#9b5cff', borderRadius: 6, barThickness: 20 }]
             },
             options: commonOptions
         });
@@ -198,7 +187,7 @@ async function carregarGraficosFrota() {
     } catch (e) { console.error("Erro gráficos:", e); }
 }
 
-// --- 3. LISTA HISTÓRICO ---
+// --- 3. LISTA HISTÓRICO DETALHADO ---
 async function carregarHistoricoDetalhado() {
     const tbody = document.getElementById('tabela-historico').querySelector('tbody');
     const loading = document.getElementById('historico-loading');
