@@ -9,6 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
 
     <link rel="stylesheet" href="src/style/style.css">
     <link rel="stylesheet" href="src/style/planejamento.css">
@@ -22,6 +23,11 @@
           <span>GAFIA</span>
         </a>
 
+        <input type="checkbox" id="nav-toggle" class="nav-toggle" aria-label="Abrir menu" />
+        <label for="nav-toggle" class="hamburger" aria-hidden="true">
+            <span></span><span></span><span></span>
+        </label>
+
         <nav id="nav-guest" class="nav" aria-label="Principal">
           <a href="index.html#inicio">Início</a>
           <a href="index.html#sobre">Sobre</a>
@@ -32,6 +38,7 @@
         </nav>
 
         <nav id="nav-user" class="nav" aria-label="Principal do Utilizador" style="display: none;">
+          <a href="dashboard.html">Inicio</a> 
           <a href="planejamento.html">Planejar Viagem</a>
           <a href="veiculos.html">Meus Veículos</a>
           <a href="perfil.html">Meu Perfil</a>
@@ -57,7 +64,7 @@
 
             <select id="select-meu-carro" style="width: 100%; padding: 12px; margin-bottom: 12px; border-radius: 12px; border: 1px solid var(--stroke); background-color: #ffffff1a; color: var(--text); font-family: 'Poppins', sans-serif; font-size: 1rem;">
                 <option value="">Selecione seu veículo...</option>
-                </select>
+            </select>
             
             <button id="calculate-route" class="btn btn-primary">Calcular Viagem e Pontos de Recarga</button>
         </div>
