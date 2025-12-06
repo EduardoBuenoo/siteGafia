@@ -5,7 +5,6 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(res => res.json())
         .then(session => {
             if (session.loggedIn) {
-                // Carrega todas as seções
                 carregarResumoUsuario();
                 carregarSustentabilidade();
                 carregarHistoricoDetalhado();
@@ -17,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
         .catch(error => console.error('Erro de sessão:', error));
 });
 
-// --- 1. RESUMO GERAL (Topo - Gráficos Elegantes) ---
+// --- 1. RESUMO GERAL ---
 async function carregarResumoUsuario() {
     try {
         const response = await fetch('api/resumo_usuario.php');
@@ -28,16 +27,12 @@ async function carregarResumoUsuario() {
             const km = parseFloat(data.total_km || 0).toFixed(0);
             const recargas = data.total_abastecimentos || 0;
 
-            // Atualiza os números no centro dos gráficos
             document.getElementById('val-viagens').textContent = viagens;
             document.getElementById('val-km').textContent = km;
             document.getElementById('val-recargas').textContent = recargas;
 
-            // Função para criar os gráficos de rosca com gradiente
             const createGradientDonut = (canvasId, colorStart, colorEnd, isTall = false) => {
                 const ctx = document.getElementById(canvasId).getContext('2d');
-                
-                // Cria o gradiente
                 const gradient = ctx.createLinearGradient(0, 0, 0, 160);
                 gradient.addColorStop(0, colorStart);
                 gradient.addColorStop(1, colorEnd);
@@ -47,14 +42,13 @@ async function carregarResumoUsuario() {
                     data: {
                         labels: ['Total'],
                         datasets: [{
-                            data: [100], // 100% preenchido
+                            data: [100],
                             backgroundColor: [gradient],
                             borderWidth: 0,
                             borderRadius: 10,
                             cutout: '85%',
                         },
                         {
-                            // Anel de fundo
                             data: [100],
                             backgroundColor: '#ffffff0a',
                             borderWidth: 0,
@@ -63,22 +57,17 @@ async function carregarResumoUsuario() {
                         }]
                     },
                     options: {
-                        // Se for o gráfico ALTO (do meio), permite esticar. Se não, mantém quadrado.
                         maintainAspectRatio: !isTall, 
                         responsive: true,
                         plugins: { tooltip: { enabled: false }, legend: { display: false } },
-                        events: [], // Estático
-                        animation: {
-                            animateScale: true,
-                            animateRotate: true
-                        }
+                        events: [],
+                        animation: { animateScale: true, animateRotate: true }
                     }
                 });
             };
 
-            // Gera os 3 gráficos do topo
             createGradientDonut('chartResumoViagens', '#ff2efc', '#bc13fe'); 
-            createGradientDonut('chartResumoKm', '#34d399', '#059669', true); // <--- Este fica ALTO (box-alto no HTML)
+            createGradientDonut('chartResumoKm', '#34d399', '#059669', true); 
             createGradientDonut('chartResumoRecargas', '#a78bfa', '#7c3aed'); 
         }
     } catch (e) { console.error("Erro resumo:", e); }
@@ -93,14 +82,13 @@ async function carregarSustentabilidade() {
         if (!data.error) {
              const co2 = document.getElementById('eco-co2');
              const arvores = document.getElementById('eco-arvores');
-             
              if(co2) co2.textContent = data.kg_co2_poupados || 0;
              if(arvores) arvores.textContent = data.arvores_equivalentes || 0;
         }
     } catch (e) { console.error("Erro sustentabilidade:", e); }
 }
 
-// --- 2. GRÁFICOS DA FROTA (Corrigido para evitar distorção) ---
+// --- 2. GRÁFICOS DA FROTA ---
 async function carregarGraficosFrota() {
     try {
         const response = await fetch('api/desempenho_carros.php');
@@ -111,15 +99,10 @@ async function carregarGraficosFrota() {
         const tbody = document.getElementById('tabela-desempenho').querySelector('tbody');
         tbody.innerHTML = '';
         
-        const labels = [];
-        const dataViagens = [];
-        const dataKM = [];
-        const dataRecargas = [];
+        const labels = []; const dataViagens = []; const dataKM = []; const dataRecargas = [];
 
         dados.forEach(carro => {
             const horas = parseFloat(carro.total_horas || 0);
-
-            // Preenche Tabela
             const row = tbody.insertRow();
             row.insertCell().textContent = carro.nome_veiculo;
             row.insertCell().textContent = `${parseFloat(carro.km_total_rodado).toFixed(0)} km`;
@@ -127,14 +110,12 @@ async function carregarGraficosFrota() {
             row.insertCell().textContent = `${horas} h`; 
             row.insertCell().textContent = carro.total_recargas;
 
-            // Preenche Gráficos
             labels.push(carro.nome_veiculo); 
             dataViagens.push(carro.total_viagens);
             dataKM.push(parseFloat(carro.km_total_rodado));
             dataRecargas.push(carro.total_recargas);
         });
 
-        // Opções comuns para Barras
         const commonOptions = {
             responsive: true,
             plugins: { legend: { display: false } },
@@ -144,7 +125,6 @@ async function carregarGraficosFrota() {
             }
         };
 
-        // 1. Viagens (Barras)
         new Chart(document.getElementById('chartViagens'), {
             type: 'bar',
             data: {
@@ -154,7 +134,7 @@ async function carregarGraficosFrota() {
             options: commonOptions
         });
 
-        // 2. KM (Rosca) - CORREÇÃO AQUI
+        // --- KM RODADOS (CIRCULAR E CENTRALIZADO) ---
         new Chart(document.getElementById('chartKM'), {
             type: 'doughnut',
             data: {
@@ -168,13 +148,12 @@ async function carregarGraficosFrota() {
             },
             options: {
                 responsive: true,
-                maintainAspectRatio: true, // <--- GARANTE QUE FIQUE REDONDO/QUADRADO
+                maintainAspectRatio: true, // <--- Mantém o círculo perfeito
                 cutout: '60%', 
                 plugins: { legend: { position: 'right', labels: { color: '#fff', boxWidth: 12 } } }
             }
         });
 
-        // 3. Recargas (Barras)
         new Chart(document.getElementById('chartRecargas'), {
             type: 'bar',
             data: {
@@ -187,7 +166,7 @@ async function carregarGraficosFrota() {
     } catch (e) { console.error("Erro gráficos:", e); }
 }
 
-// --- 3. LISTA HISTÓRICO DETALHADO ---
+// --- 3. LISTA HISTÓRICO ---
 async function carregarHistoricoDetalhado() {
     const tbody = document.getElementById('tabela-historico').querySelector('tbody');
     const loading = document.getElementById('historico-loading');
