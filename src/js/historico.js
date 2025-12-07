@@ -27,48 +27,20 @@ async function carregarResumoUsuario() {
             const km = parseFloat(data.total_km || 0).toFixed(0);
             const recargas = data.total_abastecimentos || 0;
 
-            document.getElementById('val-viagens').textContent = viagens;
-            document.getElementById('val-km').textContent = km;
-            document.getElementById('val-recargas').textContent = recargas;
+            // --- CORREÇÃO: IDs ajustados para bater com o historico.html ---
+            // Verifica se o elemento existe antes de tentar alterar
+            if (document.getElementById('total-viagens')) {
+                document.getElementById('total-viagens').textContent = viagens;
+            }
+            if (document.getElementById('total-km')) {
+                document.getElementById('total-km').textContent = km;
+            }
+            if (document.getElementById('total-abastecimentos')) {
+                document.getElementById('total-abastecimentos').textContent = recargas;
+            }
 
-            const createGradientDonut = (canvasId, colorStart, colorEnd, isTall = false) => {
-                const ctx = document.getElementById(canvasId).getContext('2d');
-                const gradient = ctx.createLinearGradient(0, 0, 0, 160);
-                gradient.addColorStop(0, colorStart);
-                gradient.addColorStop(1, colorEnd);
-
-                new Chart(ctx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['Total'],
-                        datasets: [{
-                            data: [100],
-                            backgroundColor: [gradient],
-                            borderWidth: 0,
-                            borderRadius: 10,
-                            cutout: '85%',
-                        },
-                        {
-                            data: [100],
-                            backgroundColor: '#ffffff0a',
-                            borderWidth: 0,
-                            cutout: '85%',
-                            weight: 0.8 
-                        }]
-                    },
-                    options: {
-                        maintainAspectRatio: !isTall, 
-                        responsive: true,
-                        plugins: { tooltip: { enabled: false }, legend: { display: false } },
-                        events: [],
-                        animation: { animateScale: true, animateRotate: true }
-                    }
-                });
-            };
-
-            createGradientDonut('chartResumoViagens', '#ff2efc', '#bc13fe'); 
-            createGradientDonut('chartResumoKm', '#34d399', '#059669', true); 
-            createGradientDonut('chartResumoRecargas', '#a78bfa', '#7c3aed'); 
+            // O código anterior de gráficos (createGradientDonut) foi removido 
+            // pois os canvas 'chartResumoViagens' não existem no HTML, causando erro.
         }
     } catch (e) { console.error("Erro resumo:", e); }
 }
@@ -82,6 +54,8 @@ async function carregarSustentabilidade() {
         if (!data.error) {
              const co2 = document.getElementById('eco-co2');
              const arvores = document.getElementById('eco-arvores');
+             
+             // Verifica e atualiza
              if(co2) co2.textContent = data.kg_co2_poupados || 0;
              if(arvores) arvores.textContent = data.arvores_equivalentes || 0;
         }
@@ -125,43 +99,50 @@ async function carregarGraficosFrota() {
             }
         };
 
-        new Chart(document.getElementById('chartViagens'), {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [{ label: 'Viagens', data: dataViagens, backgroundColor: '#ff2efc', borderRadius: 6, barThickness: 20 }]
-            },
-            options: commonOptions
-        });
+        // Verifica se os elementos existem antes de criar os charts
+        if (document.getElementById('chartViagens')) {
+            new Chart(document.getElementById('chartViagens'), {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{ label: 'Viagens', data: dataViagens, backgroundColor: '#ff2efc', borderRadius: 6, barThickness: 20 }]
+                },
+                options: commonOptions
+            });
+        }
 
         // --- KM RODADOS (CIRCULAR E CENTRALIZADO) ---
-        new Chart(document.getElementById('chartKM'), {
-            type: 'doughnut',
-            data: {
-                labels: labels,
-                datasets: [{ 
-                    data: dataKM, 
-                    backgroundColor: ['#ff2efc', '#9b5cff', '#34d399', '#fbbf24', '#f87171'],
-                    borderColor: '#1e0b36', 
-                    borderWidth: 4
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: true, // <--- Mantém o círculo perfeito
-                cutout: '60%', 
-                plugins: { legend: { position: 'right', labels: { color: '#fff', boxWidth: 12 } } }
-            }
-        });
+        if (document.getElementById('chartKM')) {
+            new Chart(document.getElementById('chartKM'), {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{ 
+                        data: dataKM, 
+                        backgroundColor: ['#ff2efc', '#9b5cff', '#34d399', '#fbbf24', '#f87171'],
+                        borderColor: '#1e0b36', 
+                        borderWidth: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true, 
+                    cutout: '60%', 
+                    plugins: { legend: { position: 'right', labels: { color: '#fff', boxWidth: 12 } } }
+                }
+            });
+        }
 
-        new Chart(document.getElementById('chartRecargas'), {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [{ label: 'Recargas', data: dataRecargas, backgroundColor: '#9b5cff', borderRadius: 6, barThickness: 20 }]
-            },
-            options: commonOptions
-        });
+        if (document.getElementById('chartRecargas')) {
+            new Chart(document.getElementById('chartRecargas'), {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{ label: 'Recargas', data: dataRecargas, backgroundColor: '#9b5cff', borderRadius: 6, barThickness: 20 }]
+                },
+                options: commonOptions
+            });
+        }
 
     } catch (e) { console.error("Erro gráficos:", e); }
 }
@@ -175,7 +156,7 @@ async function carregarHistoricoDetalhado() {
         const response = await fetch('api/historico_completo.php');
         const historico = await response.json();
         
-        loading.style.display = 'none';
+        if (loading) loading.style.display = 'none';
         tbody.innerHTML = '';
 
         if (!historico || historico.length === 0) {
@@ -185,7 +166,13 @@ async function carregarHistoricoDetalhado() {
 
         historico.forEach(v => {
             const row = tbody.insertRow();
-            const dataF = new Date(v.dt_consulta).toLocaleDateString('pt-BR');
+            // Fallback caso a data venha nula ou inválida
+            let dataF = '--/--/----';
+            if(v.dt_consulta) {
+                const dateObj = new Date(v.dt_consulta);
+                // Ajuste simples de fuso horário se necessário, ou apenas toLocaleDateString
+                dataF = dateObj.toLocaleDateString('pt-BR');
+            }
             
             row.insertCell().innerHTML = `<span style="color:#ccc">${dataF}</span>`;
             
@@ -199,7 +186,7 @@ async function carregarHistoricoDetalhado() {
         });
 
     } catch (e) { 
-        loading.textContent = 'Erro ao carregar.';
+        if (loading) loading.textContent = 'Erro ao carregar.';
         console.error(e); 
     }
 }
