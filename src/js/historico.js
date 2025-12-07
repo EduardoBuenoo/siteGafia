@@ -5,10 +5,10 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(res => res.json())
         .then(session => {
             if (session.loggedIn) {
-                // Carrega todas as novas seções
                 carregarResumoUsuario();
+                carregarSustentabilidade();
                 carregarHistoricoDetalhado();
-                carregarGraficosFrota(); // Essa função cria os 4 gráficos novos
+                carregarGraficosFrota();
             } else {
                 window.location.href = 'login.html'; 
             }
@@ -16,129 +16,157 @@ document.addEventListener('DOMContentLoaded', () => {
         .catch(error => console.error('Erro de sessão:', error));
 });
 
-// --- 1. RESUMO GERAL (Topo da página) ---
+// --- 1. RESUMO GERAL ---
 async function carregarResumoUsuario() {
     try {
         const response = await fetch('api/resumo_usuario.php');
         const data = await response.json();
         
         if (!data.error) {
-            document.getElementById('total-viagens').textContent = data.total_viagens || 0;
-            document.getElementById('total-km').textContent = parseFloat(data.total_km || 0).toFixed(0) + ' km';
-            document.getElementById('total-abastecimentos').textContent = data.total_abastecimentos || 0;
+            const viagens = data.total_viagens || 0;
+            const km = parseFloat(data.total_km || 0).toFixed(0);
+            const recargas = data.total_abastecimentos || 0;
+
+            document.getElementById('val-viagens').textContent = viagens;
+            document.getElementById('val-km').textContent = km;
+            document.getElementById('val-recargas').textContent = recargas;
+
+            const createGradientDonut = (canvasId, colorStart, colorEnd, isTall = false) => {
+                const ctx = document.getElementById(canvasId).getContext('2d');
+                const gradient = ctx.createLinearGradient(0, 0, 0, 160);
+                gradient.addColorStop(0, colorStart);
+                gradient.addColorStop(1, colorEnd);
+
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Total'],
+                        datasets: [{
+                            data: [100],
+                            backgroundColor: [gradient],
+                            borderWidth: 0,
+                            borderRadius: 10,
+                            cutout: '85%',
+                        },
+                        {
+                            data: [100],
+                            backgroundColor: '#ffffff0a',
+                            borderWidth: 0,
+                            cutout: '85%',
+                            weight: 0.8 
+                        }]
+                    },
+                    options: {
+                        maintainAspectRatio: !isTall, 
+                        responsive: true,
+                        plugins: { tooltip: { enabled: false }, legend: { display: false } },
+                        events: [],
+                        animation: { animateScale: true, animateRotate: true }
+                    }
+                });
+            };
+
+            createGradientDonut('chartResumoViagens', '#ff2efc', '#bc13fe'); 
+            createGradientDonut('chartResumoKm', '#34d399', '#059669', true); 
+            createGradientDonut('chartResumoRecargas', '#a78bfa', '#7c3aed'); 
         }
     } catch (e) { console.error("Erro resumo:", e); }
 }
 
-// --- 2. GRÁFICOS E TABELA DE DESEMPENHO (Meio da página) ---
+// --- 1.5. SUSTENTABILIDADE ---
+async function carregarSustentabilidade() {
+    try {
+        const response = await fetch('api/dados_sustentabilidade.php');
+        const data = await response.json();
+
+        if (!data.error) {
+             const co2 = document.getElementById('eco-co2');
+             const arvores = document.getElementById('eco-arvores');
+             if(co2) co2.textContent = data.kg_co2_poupados || 0;
+             if(arvores) arvores.textContent = data.arvores_equivalentes || 0;
+        }
+    } catch (e) { console.error("Erro sustentabilidade:", e); }
+}
+
+// --- 2. GRÁFICOS DA FROTA ---
 async function carregarGraficosFrota() {
     try {
-        // Usa a view atualizada que tem todos os dados (tempo, recargas, km)
         const response = await fetch('api/desempenho_carros.php');
         const dados = await response.json();
 
         if (dados.error || dados.length === 0) return;
 
-        // Preencher Tabela de Desempenho
         const tbody = document.getElementById('tabela-desempenho').querySelector('tbody');
         tbody.innerHTML = '';
         
-        // Arrays para alimentar os Gráficos
-        const labels = [];
-        const dataViagens = [];
-        const dataKM = [];
-        const dataTempo = [];
-        const dataRecargas = [];
+        const labels = []; const dataViagens = []; const dataKM = []; const dataRecargas = [];
 
         dados.forEach(carro => {
-            // Preenche a Tabela
+            const horas = parseFloat(carro.total_horas || 0);
             const row = tbody.insertRow();
             row.insertCell().textContent = carro.nome_veiculo;
             row.insertCell().textContent = `${parseFloat(carro.km_total_rodado).toFixed(0)} km`;
             row.insertCell().textContent = carro.total_viagens;
-            row.insertCell().textContent = `${carro.total_horas} h`;
+            row.insertCell().textContent = `${horas} h`; 
             row.insertCell().textContent = carro.total_recargas;
 
-            // Preenche os Arrays dos Gráficos
-            // Pega apenas a primeira parte do nome para o gráfico não ficar poluido
-            labels.push(carro.nome_veiculo.split(' ')[0]); 
+            labels.push(carro.nome_veiculo); 
             dataViagens.push(carro.total_viagens);
             dataKM.push(parseFloat(carro.km_total_rodado));
-            dataTempo.push(parseFloat(carro.total_horas || 0));
             dataRecargas.push(carro.total_recargas);
         });
 
-        // Configuração Visual Comum dos Gráficos
-        const cores = ['#ff2efc', '#9b5cff', '#34d399', '#fbbf24', '#f87171'];
         const commonOptions = {
             responsive: true,
             plugins: { legend: { display: false } },
             scales: {
-                y: { beginAtZero: true, ticks: { color: '#ddd' }, grid: { color: '#ffffff1a' } },
-                x: { ticks: { color: '#ddd' }, grid: { display: false } }
+                y: { beginAtZero: true, ticks: { color: '#9ca3af' }, grid: { color: '#ffffff1a' } },
+                x: { ticks: { color: '#9ca3af' }, grid: { display: false } }
             }
         };
 
-        // 1. Gráfico de Viagens (Barra Vertical)
         new Chart(document.getElementById('chartViagens'), {
             type: 'bar',
             data: {
                 labels: labels,
-                datasets: [{ label: 'Viagens', data: dataViagens, backgroundColor: '#ff2efc', borderRadius: 5 }]
+                datasets: [{ label: 'Viagens', data: dataViagens, backgroundColor: '#ff2efc', borderRadius: 6, barThickness: 20 }]
             },
             options: commonOptions
         });
 
-        // 2. Gráfico de KM (Rosca/Donut)
+        // --- KM RODADOS (CIRCULAR E CENTRALIZADO) ---
         new Chart(document.getElementById('chartKM'), {
             type: 'doughnut',
             data: {
                 labels: labels,
                 datasets: [{ 
                     data: dataKM, 
-                    backgroundColor: cores,
-                    borderColor: '#2b0e47',
-                    borderWidth: 2
+                    backgroundColor: ['#ff2efc', '#9b5cff', '#34d399', '#fbbf24', '#f87171'],
+                    borderColor: '#1e0b36', 
+                    borderWidth: 4
                 }]
             },
             options: {
                 responsive: true,
-                plugins: { legend: { position: 'bottom', labels: { color: '#fff' } } }
+                maintainAspectRatio: true, // <--- Mantém o círculo perfeito
+                cutout: '60%', 
+                plugins: { legend: { position: 'right', labels: { color: '#fff', boxWidth: 12 } } }
             }
         });
 
-        // 3. Gráfico de Tempo (Barra Horizontal)
-        new Chart(document.getElementById('chartTempo'), {
+        new Chart(document.getElementById('chartRecargas'), {
             type: 'bar',
             data: {
                 labels: labels,
-                datasets: [{ label: 'Horas', data: dataTempo, backgroundColor: '#34d399', borderRadius: 5 }]
+                datasets: [{ label: 'Recargas', data: dataRecargas, backgroundColor: '#9b5cff', borderRadius: 6, barThickness: 20 }]
             },
-            options: { ...commonOptions, indexAxis: 'y' } // 'y' faz a barra ficar deitada
+            options: commonOptions
         });
 
-        // 4. Gráfico de Recargas (Pizza/Pie)
-        new Chart(document.getElementById('chartRecargas'), {
-            type: 'pie',
-            data: {
-                labels: labels,
-                datasets: [{ 
-                    data: dataRecargas, 
-                    backgroundColor: cores,
-                    borderColor: '#2b0e47',
-                    borderWidth: 2
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: { legend: { position: 'bottom', labels: { color: '#fff' } } }
-            }
-        });
-
-    } catch (e) { console.error("Erro ao gerar gráficos:", e); }
+    } catch (e) { console.error("Erro gráficos:", e); }
 }
 
-// --- 3. HISTÓRICO DETALHADO (Lista no final da página) ---
+// --- 3. LISTA HISTÓRICO ---
 async function carregarHistoricoDetalhado() {
     const tbody = document.getElementById('tabela-historico').querySelector('tbody');
     const loading = document.getElementById('historico-loading');
@@ -151,30 +179,27 @@ async function carregarHistoricoDetalhado() {
         tbody.innerHTML = '';
 
         if (!historico || historico.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 20px;">Nenhuma viagem encontrada.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 30px; color:#aaa">Nenhuma viagem encontrada.</td></tr>';
             return;
         }
 
         historico.forEach(v => {
             const row = tbody.insertRow();
-            
-            // Formata data
             const dataF = new Date(v.dt_consulta).toLocaleDateString('pt-BR');
             
-            row.insertCell().textContent = dataF;
+            row.insertCell().innerHTML = `<span style="color:#ccc">${dataF}</span>`;
             
-            // Formata trajeto com setinha
             row.insertCell().innerHTML = `
                 <div style="font-weight:600; color:#fff">${v.cidade_destino}</div>
-                <div style="font-size:0.85rem; color:#aaa">De: ${v.cidade_origem}</div>
+                <div style="font-size:0.8rem; color:#777; margin-top:2px;">Origem: ${v.cidade_origem}</div>
             `;
             
-            row.insertCell().textContent = `${v.nm_marca} ${v.nm_modelo}`;
-            row.insertCell().textContent = `${parseFloat(v.km_viagem).toFixed(1)} km`;
+            row.insertCell().innerHTML = `<span style="color:#a78bfa">${v.nm_marca} ${v.nm_modelo}</span>`;
+            row.insertCell().innerHTML = `<strong style="color:#34d399">${parseFloat(v.km_viagem).toFixed(1)} km</strong>`;
         });
 
     } catch (e) { 
-        loading.textContent = 'Erro ao carregar histórico.';
+        loading.textContent = 'Erro ao carregar.';
         console.error(e); 
     }
 }

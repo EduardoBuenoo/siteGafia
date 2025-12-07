@@ -11,32 +11,84 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
 
   <style>
-    /* --- Estilos do Grid de Gráficos --- */
+    /* --- Estilos do Grid de Gráficos (Mantido para seção inferior) --- */
     .charts-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
         gap: 20px;
         margin-bottom: 30px;
         width: 100%;
     }
+    
     .chart-box {
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 16px;
-        padding: 20px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 20px;
+        padding: 25px;
         display: flex;
         flex-direction: column;
         align-items: center;
+        position: relative;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        transition: transform 0.3s ease;
     }
+    
+    .chart-box:hover {
+        transform: translateY(-5px);
+        border-color: rgba(255, 255, 255, 0.2);
+    }
+
     .chart-box h3 {
-        color: #e6d6ff;
-        font-size: 1rem;
-        margin-bottom: 15px;
-        text-align: center;
+        color: #d1d5db;
+        font-size: 0.95rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 20px;
+        font-weight: 600;
+        z-index: 2;
     }
+
+    /* Container do Canvas para controle de tamanho */
+    .canvas-container {
+        position: relative;
+        width: 160px;
+        height: 160px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
     canvas {
-        max-width: 100%;
-        max-height: 250px;
+        z-index: 1;
+    }
+
+    /* Número Centralizado Moderno */
+    .chart-number {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        z-index: 0;
+    }
+
+    .chart-number span {
+        display: block;
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #fff;
+        line-height: 1;
+        text-shadow: 0 0 15px rgba(255,255,255,0.3);
+    }
+
+    .chart-number small {
+        font-size: 0.75rem;
+        color: #9ca3af;
+        font-weight: 400;
+        text-transform: uppercase;
+        margin-top: 4px;
+        display: block;
     }
 
     /* --- NOVOS ESTILOS: Cards de Estatísticas (Topo) --- */
@@ -51,7 +103,7 @@
         background: rgba(255, 255, 255, 0.05);
         border: 1px solid rgba(255, 255, 255, 0.1);
         border-radius: 16px;
-        padding: 25px; /* Mais espaço interno */
+        padding: 25px; 
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -82,11 +134,19 @@
     }
 
     /* --- Estilos da tabela --- */
-    .table-responsive { overflow-x: auto; width: 100%; margin-bottom: 20px; }
+    .table-responsive { 
+        overflow-x: auto; 
+        width: 100%; 
+        margin-bottom: 20px; 
+        border-radius: 12px; 
+        border: 1px solid rgba(255,255,255,0.05); 
+    }
+    
     table { width: 100%; border-collapse: collapse; }
-    th, td { padding: 12px 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.9rem; }
-    th { background: rgba(255,255,255,0.05); font-weight: 600; color: #fff; }
+    th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.9rem; }
+    th { background: rgba(255,255,255,0.08); font-weight: 600; color: #fff; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.5px; }
     tbody tr:hover { background: rgba(255,255,255,0.03); }
+    td { color: #d1d5db; }
   </style>
 </head>
 <body>
@@ -136,28 +196,30 @@
             <strong id="total-abastecimentos">...</strong>
         </div>
     </div>
+
     <h2 class="section-title full" style="margin-top: 20px; color: #34d399;">Impacto Ambiental 🌱</h2>
     
     <div class="charts-grid full">
-        <div class="chart-box" style="border-color: #34d399; background: rgba(52, 211, 153, 0.05);">
-            <i class="fa-solid fa-leaf" style="font-size: 2rem; color: #34d399; margin-bottom: 10px;"></i>
-            <h3 style="color: #34d399;">CO₂ Evitado</h3>
-            <p style="font-size: 1.5rem; font-weight: bold; color: #fff;">
-                <span id="eco-co2">0</span> <small style="font-size: 0.8rem;">kg</small>
+        <div class="chart-box" style="border-color: rgba(52, 211, 153, 0.3); background: rgba(52, 211, 153, 0.05);">
+            <i class="fa-solid fa-leaf" style="font-size: 2rem; color: #34d399; margin-bottom: 10px; filter: drop-shadow(0 0 5px rgba(52, 211, 153, 0.5));"></i>
+            <h3 style="color: #34d399; margin-bottom: 5px;">CO₂ Evitado</h3>
+            <p style="font-size: 1.8rem; font-weight: bold; color: #fff;">
+                <span id="eco-co2">0</span> <small style="font-size: 0.9rem; color:#ccc">kg</small>
             </p>
-            <span style="font-size: 0.8rem; color: #aaa;">Em comparação a carros a combustão</span>
+            <span style="font-size: 0.8rem; color: #aaa; text-align:center">vs. Combustão</span>
         </div>
 
-        <div class="chart-box" style="border-color: #34d399; background: rgba(52, 211, 153, 0.05);">
-            <i class="fa-solid fa-tree" style="font-size: 2rem; color: #34d399; margin-bottom: 10px;"></i>
-            <h3 style="color: #34d399;">Árvores Salvas</h3>
-            <p style="font-size: 1.5rem; font-weight: bold; color: #fff;">
+        <div class="chart-box" style="border-color: rgba(52, 211, 153, 0.3); background: rgba(52, 211, 153, 0.05);">
+            <i class="fa-solid fa-tree" style="font-size: 2rem; color: #34d399; margin-bottom: 10px; filter: drop-shadow(0 0 5px rgba(52, 211, 153, 0.5));"></i>
+            <h3 style="color: #34d399; margin-bottom: 5px;">Árvores Salvas</h3>
+            <p style="font-size: 1.8rem; font-weight: bold; color: #fff;">
                 <span id="eco-arvores">0</span>
             </p>
-            <span style="font-size: 0.8rem; color: #aaa;">Equivalente em absorção de carbono</span>
+            <span style="font-size: 0.8rem; color: #aaa; text-align:center">Equivalência</span>
         </div>
     </div>
-    <hr class="full" style="margin: 25px 0; border-color: rgba(255,255,255,0.15);">
+    
+    <hr class="full" style="margin: 25px 0; border-color: rgba(255,255,255,0.1);">
     
     <h2 class="section-title full">Estatísticas da Frota</h2>
     
@@ -166,21 +228,19 @@
             <h3>Viagens por Carro</h3>
             <canvas id="chartViagens"></canvas>
         </div>
-        <div class="chart-box">
+        
+        <div class="chart-box box-alto">
             <h3>KM Rodados</h3>
             <canvas id="chartKM"></canvas>
         </div>
-        <div class="chart-box">
-            <h3>Tempo de Uso (Horas)</h3>
-            <canvas id="chartTempo"></canvas>
-        </div>
+        
         <div class="chart-box">
             <h3>Recargas Realizadas</h3>
             <canvas id="chartRecargas"></canvas>
         </div>
     </div>
 
-    <hr class="full" style="margin: 25px 0; border-color: rgba(255,255,255,0.15);">
+    <hr class="full" style="margin: 25px 0; border-color: rgba(255,255,255,0.1);">
 
     <h2 class="section-title full">Detalhes de Desempenho</h2>
     <div class="table-responsive">
@@ -197,7 +257,7 @@
     </div>
 
     <h2 class="section-title full" style="margin-top: 30px;">Diário de Bordo</h2>
-    <div id="historico-loading" class="full" style="text-align: center; color: #ddd; padding: 10px;">Carregando...</div>
+    <div id="historico-loading" class="full" style="text-align: center; color: #aaa; padding: 10px; font-style: italic;">Carregando histórico...</div>
     <div class="table-responsive">
         <table id="tabela-historico">
             <thead>

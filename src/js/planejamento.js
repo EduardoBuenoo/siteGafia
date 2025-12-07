@@ -9,10 +9,9 @@ let veiculoSelecionado = { id: null, autonomia: 300, eficiencia: 200 };
 
 const OCM_API_KEY = "c1b598ab-8144-43d6-9c74-e191d034ab21";
 
-// --- CORREÇÃO: Torna a função global para o Google Maps encontrar ---
+// --- Inicializa o Mapa ---
 window.initMap = async function() {
     
-    // Importa as bibliotecas necessárias
     const { Map } = await google.maps.importLibrary("maps");
     const { Autocomplete } = await google.maps.importLibrary("places");
     const { DirectionsService, DirectionsRenderer } = await google.maps.importLibrary("routes");
@@ -20,16 +19,14 @@ window.initMap = async function() {
     directionsService = new DirectionsService();
     directionsRenderer = new DirectionsRenderer();
 
-    // Inicializa o Mapa
     map = new Map(document.getElementById("map"), {
         zoom: 4,
-        center: { lat: -14.235, lng: -51.925 }, // Centro do Brasil
+        center: { lat: -14.235, lng: -51.925 }, 
         mapId: "GAFIA_MAP_STYLE"
     });
 
     directionsRenderer.setMap(map);
     
-    // Configura os inputs de endereço
     const originInput = document.getElementById('origin-input');
     const destinationInput = document.getElementById('destination-input');
     
@@ -38,15 +35,13 @@ window.initMap = async function() {
         new Autocomplete(destinationInput, { componentRestrictions: { country: "br" } });
     }
 
-    // Botão de Calcular
     const btnCalc = document.getElementById('calculate-route');
     if(btnCalc) btnCalc.addEventListener('click', calculateAndDisplayRoute);
     
-    // Dropdown de Seleção de Carro
     const selectCarro = document.getElementById('select-meu-carro');
     if (selectCarro) selectCarro.addEventListener('change', updateSelectedVehicle);
 
-    // Verifica sessão
+    // Verifica sessão ao carregar
     await checkSession(); 
 };
 
@@ -69,6 +64,13 @@ async function checkSession() {
         
         if (session.loggedIn) {
             usuarioEstaLogado = true;
+            
+            // --- CORREÇÃO: Altera o link da logo para Dashboard se logado ---
+            const logoLink = document.querySelector('.logo');
+            if (logoLink) {
+                logoLink.href = 'dashboard.html';
+            }
+
             if (loginPrompt) loginPrompt.style.display = 'none'; 
             if (selectCarro) {
                 selectCarro.style.display = 'block';
@@ -76,6 +78,8 @@ async function checkSession() {
             }
         } else {
             usuarioEstaLogado = false;
+            // Se não estiver logado, a logo mantém o padrão (index.html) definido no HTML
+            
             if (loginPrompt) loginPrompt.style.display = 'block'; 
             if (selectCarro) selectCarro.style.display = 'none'; 
         }
@@ -102,10 +106,6 @@ async function carregarVeiculos(selectElement) {
                 });
                 option.textContent = `${carro.nm_marca} ${carro.nm_modelo}`;
                 
-                if (index === 0) {
-                    option.selected = true;
-                    veiculoSelecionado = JSON.parse(option.value);
-                }
                 selectElement.appendChild(option);
             });
         }
@@ -119,14 +119,11 @@ async function findChargingStations(bounds) {
     const routeResult = directionsRenderer.getDirections();
     if (!routeResult || routeResult.routes.length === 0) return;
 
-    const lastLeg = routeResult.routes[0].legs.slice(-1)[0]; // Última etapa (do penúltimo ponto ao destino)
-    const centerLat = lastLeg.end_location.lat(); // Latitude do destino final
-    const centerLng = lastLeg.end_location.lng(); // Longitude do destino final
+    const lastLeg = routeResult.routes[0].legs.slice(-1)[0];
+    const centerLat = lastLeg.end_location.lat();
+    const centerLng = lastLeg.end_location.lng();
 
-    // Define um raio de busca de pontos de carregamento (em KM)
-    const distanceKm = 15; // 15km para busca localizada
-
-    // A API da OCM permite buscar por raio em torno de um ponto
+    const distanceKm = 15; 
     const ocmUrl = `https://api.openchargemap.io/v3/poi/?output=json&latitude=${centerLat}&longitude=${centerLng}&distance=${distanceKm}&maxresults=100&verbose=false&countrycode=BR&key=${OCM_API_KEY}`;
     
     try {
@@ -178,7 +175,10 @@ function calculateAndDisplayRoute() {
             // Cálculos
             const consumoKWh = (distanciaKm * veiculoSelecionado.eficiencia) / 1000;
             const distanciaPorCarga = (veiculoSelecionado.autonomia * 1000) / veiculoSelecionado.eficiencia;
-            const paradas = Math.ceil(Math.max(0, distanciaKm / distanciaPorCarga) - 1);
+            
+            // Evita divisão por zero
+            const paradas = distanciaPorCarga > 0 ? Math.ceil(Math.max(0, distanciaKm / distanciaPorCarga) - 1) : 0;
+            
             const tempoRecargaMin = paradas * 40; 
             const tempoTotalSegundos = tempoSegundos + (tempoRecargaMin * 60);
 
