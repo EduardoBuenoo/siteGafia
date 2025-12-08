@@ -22,35 +22,35 @@ async function carregarResumoUsuario() {
         const response = await fetch('api/resumo_usuario.php');
         const data = await response.json();
         
-        // Se a API retornar erro ou dados vazios, evitamos quebrar a tela
-        if (data && !data.error) {
+        if (!data.error) {
             const viagens = data.total_viagens || 0;
             const km = parseFloat(data.total_km || 0).toFixed(0);
             const recargas = data.total_abastecimentos || 0;
 
-            // CORREÇÃO: Usando os IDs corretos que estão no seu HTML
-            if (document.getElementById('total-viagens')) {
+            // CORREÇÃO: Atualizado para usar os IDs do novo HTML
+            if(document.getElementById('total-viagens')) {
                 document.getElementById('total-viagens').textContent = viagens;
             }
-            if (document.getElementById('total-km')) {
+            if(document.getElementById('total-km')) {
                 document.getElementById('total-km').textContent = km;
             }
-            if (document.getElementById('total-abastecimentos')) {
+            if(document.getElementById('total-abastecimentos')) {
                 document.getElementById('total-abastecimentos').textContent = recargas;
             }
-        } else {
-            console.warn("Dados de resumo vazios ou com erro:", data);
+
+            // REMOVIDO: Código dos gráficos "Donut" antigos que causava erro
+            // pois os canvas 'chartResumoViagens' não existem no novo layout.
         }
     } catch (e) { console.error("Erro resumo:", e); }
 }
 
-// --- 2. SUSTENTABILIDADE ---
+// --- 1.5. SUSTENTABILIDADE ---
 async function carregarSustentabilidade() {
     try {
         const response = await fetch('api/dados_sustentabilidade.php');
         const data = await response.json();
 
-        if (data && !data.error) {
+        if (!data.error) {
              const co2 = document.getElementById('eco-co2');
              const arvores = document.getElementById('eco-arvores');
              
@@ -60,43 +60,38 @@ async function carregarSustentabilidade() {
     } catch (e) { console.error("Erro sustentabilidade:", e); }
 }
 
-// --- 3. GRÁFICOS DA FROTA ---
+// --- 2. GRÁFICOS DA FROTA ---
 async function carregarGraficosFrota() {
     try {
         const response = await fetch('api/desempenho_carros.php');
         const dados = await response.json();
 
+        // Verifica se há dados válidos
         if (!dados || dados.error || dados.length === 0) return;
 
         const tbody = document.getElementById('tabela-desempenho').querySelector('tbody');
-        if (tbody) tbody.innerHTML = '';
+        if(tbody) tbody.innerHTML = '';
         
-        const labels = []; 
-        const dataViagens = []; 
-        const dataKM = []; 
-        const dataRecargas = [];
+        const labels = []; const dataViagens = []; const dataKM = []; const dataRecargas = [];
 
         dados.forEach(carro => {
-            // Verifica se as propriedades existem para evitar 'undefined'
-            const horas = parseFloat(carro.velocidade_media_geral || 0); // Ajustado para pegar o dado disponível na View
-            const nomeCarro = carro.nome_veiculo || 'Veículo';
+            // Garante que os números sejam tratados corretamente
+            const horas = parseFloat(carro.total_horas || 0); // Ajuste conforme o retorno real da API
             const kmRodado = parseFloat(carro.km_total_rodado || 0);
-            const numViagens = parseInt(carro.total_viagens || 0);
-            const numRecargas = parseInt(carro.total_recargas || 0);
-
-            if (tbody) {
+            
+            if(tbody) {
                 const row = tbody.insertRow();
-                row.insertCell().textContent = nomeCarro;
+                row.insertCell().textContent = carro.nome_veiculo;
                 row.insertCell().textContent = `${kmRodado.toFixed(0)} km`;
-                row.insertCell().textContent = numViagens;
-                row.insertCell().textContent = `-`; // Horas não disponíveis diretamente na view corrigida simples
-                row.insertCell().textContent = numRecargas;
+                row.insertCell().textContent = carro.total_viagens;
+                row.insertCell().textContent = `${horas} h`; 
+                row.insertCell().textContent = carro.total_recargas || 0;
             }
 
-            labels.push(nomeCarro); 
-            dataViagens.push(numViagens);
+            labels.push(carro.nome_veiculo); 
+            dataViagens.push(carro.total_viagens);
             dataKM.push(kmRodado);
-            dataRecargas.push(numRecargas);
+            dataRecargas.push(carro.total_recargas || 0);
         });
 
         const commonOptions = {
@@ -108,7 +103,7 @@ async function carregarGraficosFrota() {
             }
         };
 
-        // Verifica se os elementos existem antes de criar os charts
+        // Verifica a existência dos elementos antes de criar os gráficos
         if (document.getElementById('chartViagens')) {
             new Chart(document.getElementById('chartViagens'), {
                 type: 'bar',
@@ -155,19 +150,19 @@ async function carregarGraficosFrota() {
     } catch (e) { console.error("Erro gráficos:", e); }
 }
 
-// --- 4. LISTA HISTÓRICO ---
+// --- 3. LISTA HISTÓRICO ---
 async function carregarHistoricoDetalhado() {
     const tabela = document.getElementById('tabela-historico');
-    const loading = document.getElementById('historico-loading');
+    if(!tabela) return; // Segurança caso a tabela não exista
     
-    if (!tabela) return;
     const tbody = tabela.querySelector('tbody');
+    const loading = document.getElementById('historico-loading');
 
     try {
         const response = await fetch('api/historico_completo.php');
         const historico = await response.json();
         
-        if (loading) loading.style.display = 'none';
+        if(loading) loading.style.display = 'none';
         tbody.innerHTML = '';
 
         if (!historico || historico.length === 0 || historico.error) {
@@ -177,29 +172,27 @@ async function carregarHistoricoDetalhado() {
 
         historico.forEach(v => {
             const row = tbody.insertRow();
-            
             // Tratamento de data seguro
-            let dataF = '--/--';
+            let dataF = '--/--/----';
             if(v.dt_consulta) {
                 try {
-                    const dateObj = new Date(v.dt_consulta);
-                    dataF = dateObj.toLocaleDateString('pt-BR');
-                } catch(err) { dataF = v.dt_consulta; }
+                    dataF = new Date(v.dt_consulta).toLocaleDateString('pt-BR');
+                } catch(e) {}
             }
             
             row.insertCell().innerHTML = `<span style="color:#ccc">${dataF}</span>`;
             
             row.insertCell().innerHTML = `
-                <div style="font-weight:600; color:#fff">${v.cidade_destino || 'Destino Desconhecido'}</div>
-                <div style="font-size:0.8rem; color:#777; margin-top:2px;">Origem: ${v.cidade_origem || '-'}</div>
+                <div style="font-weight:600; color:#fff">${v.cidade_destino}</div>
+                <div style="font-size:0.8rem; color:#777; margin-top:2px;">Origem: ${v.cidade_origem}</div>
             `;
             
-            row.insertCell().innerHTML = `<span style="color:#a78bfa">${v.nm_marca || ''} ${v.nm_modelo || ''}</span>`;
-            row.insertCell().innerHTML = `<strong style="color:#34d399">${parseFloat(v.km_viagem || 0).toFixed(1)} km</strong>`;
+            row.insertCell().innerHTML = `<span style="color:#a78bfa">${v.nm_marca} ${v.nm_modelo}</span>`;
+            row.insertCell().innerHTML = `<strong style="color:#34d399">${parseFloat(v.km_viagem).toFixed(1)} km</strong>`;
         });
 
     } catch (e) { 
-        if (loading) loading.textContent = 'Erro ao carregar.';
-        console.error("Erro lista detalhada:", e); 
+        if(loading) loading.textContent = 'Erro ao carregar.';
+        console.error(e); 
     }
 }
